@@ -58,3 +58,6 @@ val PriceText = Color(0xFF8A6163)
 val IconPrimary = Color(0xFF171212)
 val IconSecondary = Color(0xFF8A6163)
 val IconBackground = Color(0xFFF5F0F0)
+
+// Button Colors
+val PrimaryButton = Color(0xFFFABAC2)
