@@ -25,6 +25,7 @@ import com.mmaquera.happybabystyle.view.home.HomeScreen
 import com.mmaquera.happybabystyle.view.login.LoginScreen
 import com.mmaquera.happybabystyle.view.orderdetail.OrderDetailScreen
 import com.mmaquera.happybabystyle.view.profile.ProfileScreen
+import com.mmaquera.happybabystyle.view.welcome.WelcomeScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,7 +38,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    FavoriteScreen()
+                    WelcomeScreen()
                 }
             }
         }
