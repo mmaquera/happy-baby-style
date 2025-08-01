@@ -16,6 +16,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mmaquera.happybabystyle.ui.theme.*
+import com.mmaquera.happybabystyle.view.cart.CartScreen
+import com.mmaquera.happybabystyle.view.categories.CategoryScreen
 import com.mmaquera.happybabystyle.view.detail.DetailProductScreen
 import com.mmaquera.happybabystyle.view.home.HomeScreen
 import com.mmaquera.happybabystyle.view.login.LoginScreen
@@ -32,7 +34,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    ProfileScreen()
+                    CartScreen()
                 }
             }
         }
