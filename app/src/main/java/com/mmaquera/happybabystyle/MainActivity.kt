@@ -22,6 +22,7 @@ import com.mmaquera.happybabystyle.view.checkout.CheckoutScreen
 import com.mmaquera.happybabystyle.view.detail.DetailProductScreen
 import com.mmaquera.happybabystyle.view.home.HomeScreen
 import com.mmaquera.happybabystyle.view.login.LoginScreen
+import com.mmaquera.happybabystyle.view.orderdetail.OrderDetailScreen
 import com.mmaquera.happybabystyle.view.profile.ProfileScreen
 
 class MainActivity : ComponentActivity() {
@@ -35,7 +36,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    CheckoutScreen()
+                    OrderDetailScreen()
                 }
             }
         }
