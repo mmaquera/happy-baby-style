@@ -7,10 +7,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.LocalShipping
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -101,7 +102,7 @@ private fun OrderDetailHeader(
             modifier = Modifier.size(48.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.ArrowBack,
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = "Back",
                 tint = PrimaryText,
                 modifier = Modifier.size(24.dp)
@@ -304,7 +305,7 @@ private fun PaymentBreakdown(payment: OrderPayment) {
             amount = payment.tax
         )
         
-        Divider(
+        HorizontalDivider(
             color = BorderLight,
             thickness = 1.dp,
             modifier = Modifier.padding(vertical = 8.dp)

@@ -114,7 +114,7 @@ fun RainbowStarIcon(
         // Draw rainbow arc
         val rainbowPath = Path().apply {
             moveTo(size * 0.1f, size * 0.7f)
-            quadraticBezierTo(
+            quadraticTo(
                 size * 0.5f, size * 0.3f,
                 size * 0.9f, size * 0.7f
             )
