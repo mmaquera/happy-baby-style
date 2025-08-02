@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Happy baby style</string>
+    <string name="log_in_button_text">Ingresar</string>
+    <string name="sign_up_button_text">Registro</string>
 </resources>

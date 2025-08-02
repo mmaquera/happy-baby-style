@@ -66,8 +66,6 @@ class WelcomeViewModel : ViewModel() {
 data class WelcomeUiState(
     val isLoading: Boolean = false,
     val backgroundImageUrl: String = "https://images.unsplash.com/photo-1544126592-807ade215a0b?w=800&h=1200&fit=crop",
-    val loginButtonText: String = "Login",
-    val signUpButtonText: String = "Sign Up",
     val isLoginEnabled: Boolean = true,
     val isSignUpEnabled: Boolean = true,
     val loginButtonColor: String = "#fabac2", // Exact Figma color

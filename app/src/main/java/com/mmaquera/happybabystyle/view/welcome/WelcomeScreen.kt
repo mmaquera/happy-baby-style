@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -158,7 +159,6 @@ fun ActionButtonsSection(
         
         // Login Button - exact Figma specifications
         FigmaLoginButton(
-            text = uiState.loginButtonText,
             onClick = onLoginClick,
             enabled = uiState.isLoginEnabled,
             modifier = Modifier.constrainAs(loginButton) {
@@ -171,7 +171,6 @@ fun ActionButtonsSection(
 
         // Sign Up Button - exact Figma specifications with 12dp spacing
         FigmaSignUpButton(
-            text = uiState.signUpButtonText,
             onClick = onSignUpClick,
             enabled = uiState.isSignUpEnabled,
             modifier = Modifier.constrainAs(signUpButton) {
@@ -192,7 +191,6 @@ fun ActionButtonsSection(
  */
 @Composable
 fun FigmaLoginButton(
-    text: String,
     onClick: () -> Unit,
     enabled: Boolean,
     modifier: Modifier = Modifier
@@ -213,7 +211,7 @@ fun FigmaLoginButton(
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 0.dp) // px-5 py-0 from Figma
     ) {
         Text(
-            text = text,
+            text = stringResource(id = R.string.log_in_button_text),
             style = MaterialTheme.typography.titleMedium.copy(
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp, // text-[16px] from Figma
@@ -232,7 +230,6 @@ fun FigmaLoginButton(
  */
 @Composable
 fun FigmaSignUpButton(
-    text: String,
     onClick: () -> Unit,
     enabled: Boolean,
     modifier: Modifier = Modifier
@@ -253,7 +250,7 @@ fun FigmaSignUpButton(
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 0.dp) // px-5 py-0 from Figma
     ) {
         Text(
-            text = text,
+            text = stringResource(id = R.string.sign_up_button_text),
             style = MaterialTheme.typography.titleMedium.copy(
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp, // text-[16px] from Figma

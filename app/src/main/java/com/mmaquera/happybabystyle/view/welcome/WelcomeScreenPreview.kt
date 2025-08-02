@@ -83,7 +83,6 @@ fun ActionButtonsSectionPreview() {
 fun FigmaLoginButtonPreview() {
     HappyBabyStyleTheme {
         FigmaLoginButton(
-            text = "Login",
             onClick = {},
             enabled = true,
             modifier = Modifier.padding(16.dp)
@@ -99,7 +98,6 @@ fun FigmaLoginButtonPreview() {
 fun FigmaSignUpButtonPreview() {
     HappyBabyStyleTheme {
         FigmaSignUpButton(
-            text = "Sign Up",
             onClick = {},
             enabled = true,
             modifier = Modifier.padding(16.dp)
@@ -115,7 +113,6 @@ fun FigmaSignUpButtonPreview() {
 fun FigmaLoginButtonDisabledPreview() {
     HappyBabyStyleTheme {
         FigmaLoginButton(
-            text = "Login",
             onClick = {},
             enabled = false,
             modifier = Modifier.padding(16.dp)
@@ -131,7 +128,6 @@ fun FigmaLoginButtonDisabledPreview() {
 fun FigmaSignUpButtonDisabledPreview() {
     HappyBabyStyleTheme {
         FigmaSignUpButton(
-            text = "Sign Up",
             onClick = {},
             enabled = false,
             modifier = Modifier.padding(16.dp)
