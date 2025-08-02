@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -60,6 +61,11 @@ dependencies {
     
     // Image Loading
     implementation("io.coil-kt:coil-compose:2.5.0")
+    
+    // Navigation Compose
+    implementation("androidx.navigation:navigation-compose:2.9.3")
+
+    implementation(libs.kotlinx.serialization.json)
     
     // Testing
     testImplementation(libs.junit)

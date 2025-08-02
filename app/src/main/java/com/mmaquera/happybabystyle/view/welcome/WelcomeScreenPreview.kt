@@ -147,7 +147,6 @@ fun FigmaSignUpButtonDisabledPreview() {
 fun BackgroundImageSectionPreview() {
     HappyBabyStyleTheme {
         BackgroundImageSection(
-            imageUrl = "https://images.unsplash.com/photo-1544126592-807ade215a0b?w=800&h=1200&fit=crop",
             modifier = Modifier.size(200.dp)
         )
     }

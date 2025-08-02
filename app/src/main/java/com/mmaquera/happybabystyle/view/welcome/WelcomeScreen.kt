@@ -1,9 +1,20 @@
 package com.mmaquera.happybabystyle.view.welcome
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -11,20 +22,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
-import com.mmaquera.happybabystyle.ui.theme.*
+import com.mmaquera.happybabystyle.R
 
 /**
  * Welcome Screen composable following the exact Figma design specifications
- * 
+ *
  * Design Details from Figma:
  * - Background image covers full screen
  * - Buttons positioned at bottom with specific spacing
@@ -38,13 +46,15 @@ import com.mmaquera.happybabystyle.ui.theme.*
 @Composable
 fun WelcomeScreen(
     modifier: Modifier = Modifier,
-    viewModel: WelcomeViewModel = viewModel()
+    viewModel: WelcomeViewModel = viewModel(),
+    onLoginClick: () -> Unit = {},
+    onSignUpClick: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    
+
     WelcomeContent(
         uiState = uiState,
-        onLoginClick = viewModel::onLoginClick,
+        onLoginClick = onLoginClick,
         onSignUpClick = viewModel::onSignUpClick,
         modifier = modifier
     )
@@ -67,10 +77,9 @@ fun WelcomeContent(
     ) {
         // Background image section (Depth 1, Frame 0 in Figma)
         BackgroundImageSection(
-            imageUrl = uiState.backgroundImageUrl,
             modifier = Modifier.fillMaxSize()
         )
-        
+
         // Action buttons section (Depth 1, Frame 1 in Figma)
         ActionButtonsSection(
             uiState = uiState,
@@ -89,19 +98,16 @@ fun WelcomeContent(
  */
 @Composable
 fun BackgroundImageSection(
-    imageUrl: String,
     modifier: Modifier = Modifier
 ) {
-    Box(modifier = modifier) {
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
+    ) {
         // Background image with exact Figma specifications
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(imageUrl)
-                .crossfade(true)
-                .build(),
-            contentDescription = "Welcome background image",
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
+        Image(
+            painter = painterResource(id = R.drawable.ic_logo),
+            contentDescription = null
         )
     }
 }
@@ -131,7 +137,7 @@ fun ActionButtonsSection(
             enabled = uiState.isLoginEnabled,
             modifier = Modifier.fillMaxWidth()
         )
-        
+
         // Sign Up Button - exact Figma specifications
         FigmaSignUpButton(
             text = uiState.signUpButtonText,
