@@ -52,26 +52,29 @@ dependencies {
     implementation(libs.androidx.material3)
     
     // ViewModel and Coroutines
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.kotlinx.coroutines.android)
     
     // Material Icons
-    implementation("androidx.compose.material:material-icons-core:1.6.3")
-    implementation("androidx.compose.material:material-icons-extended:1.6.3")
+    implementation(libs.androidx.compose.material.icons.core)
+    implementation(libs.androidx.compose.material.icons.extended)
     
     // Image Loading
-    implementation("io.coil-kt:coil-compose:2.5.0")
+    implementation(libs.coil.kt.coil.compose)
     
     // Navigation Compose
-    implementation("androidx.navigation:navigation-compose:2.9.3")
+    implementation(libs.androidx.navigation.compose)
+
+    // ConstraintLayout Compose
+    implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
 
     implementation(libs.kotlinx.serialization.json)
     
     // Testing
     testImplementation(libs.junit)
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
-    testImplementation("androidx.arch.core:core-testing:2.2.0")
-    testImplementation("io.mockk:mockk:1.13.8")
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.androidx.arch.core.core.testing)
+    testImplementation(libs.mockk)
     
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

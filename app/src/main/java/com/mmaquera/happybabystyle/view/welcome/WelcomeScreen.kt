@@ -3,7 +3,6 @@ package com.mmaquera.happybabystyle.view.welcome
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,7 +17,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -27,21 +25,29 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mmaquera.happybabystyle.R
 
 /**
  * Welcome Screen composable following the exact Figma design specifications
+ * Refactored to use ConstraintLayout Compose for precise positioning
  *
  * Design Details from Figma:
- * - Background image covers full screen
- * - Buttons positioned at bottom with specific spacing
+ * - Background image covers full screen and centered
+ * - Buttons positioned at bottom with specific spacing using constraints
  * - Login button: #fabac2 (pink) background
  * - Sign Up button: #f5f0f0 (gray) background
- * - 12dp gap between buttons
+ * - 12dp gap between buttons (defined as constraint margin)
  * - 16dp horizontal padding, 12dp vertical padding
  * - 24dp border radius (rounded-3xl)
  * - Plus Jakarta Sans Bold, 16px, #171212 color
+ *
+ * Architecture:
+ * - Uses ConstraintLayout Compose for better performance and precise positioning
+ * - Eliminates nested Box layouts for cleaner composition
+ * - Maintains Figma design specifications with constraint-based positioning
  */
 @Composable
 fun WelcomeScreen(
@@ -55,13 +61,13 @@ fun WelcomeScreen(
     WelcomeContent(
         uiState = uiState,
         onLoginClick = onLoginClick,
-        onSignUpClick = viewModel::onSignUpClick,
+        onSignUpClick = onSignUpClick,
         modifier = modifier
     )
 }
 
 /**
- * Content composable that exactly matches Figma layout structure
+ * Content composable that exactly matches Figma layout structure using ConstraintLayout
  * Following Single Responsibility Principle - handles layout composition only
  */
 @Composable
@@ -71,13 +77,22 @@ fun WelcomeContent(
     onSignUpClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Main container matching Figma structure
-    Box(
+    ConstraintLayout(
         modifier = modifier.fillMaxSize()
     ) {
+        // Create references for our composables
+        val (backgroundImage, actionButtons) = createRefs()
+
         // Background image section (Depth 1, Frame 0 in Figma)
         BackgroundImageSection(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.constrainAs(backgroundImage) {
+                top.linkTo(parent.top)
+                start.linkTo(parent.start)
+                end.linkTo(parent.end)
+                bottom.linkTo(actionButtons.top)
+                width = Dimension.fillToConstraints
+                height = Dimension.fillToConstraints
+            }
         )
 
         // Action buttons section (Depth 1, Frame 1 in Figma)
@@ -85,9 +100,12 @@ fun WelcomeContent(
             uiState = uiState,
             onLoginClick = onLoginClick,
             onSignUpClick = onSignUpClick,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
+            modifier = Modifier.constrainAs(actionButtons) {
+                start.linkTo(parent.start)
+                end.linkTo(parent.end)
+                bottom.linkTo(parent.bottom)
+                width = Dimension.fillToConstraints
+            }
         )
     }
 }
@@ -95,26 +113,34 @@ fun WelcomeContent(
 /**
  * Background image section matching Figma's Depth 1, Frame 0 structure
  * Following Composition over Inheritance principle
+ * Now using ConstraintLayout for precise positioning
  */
 @Composable
 fun BackgroundImageSection(
     modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center
+    ConstraintLayout(
+        modifier = modifier
     ) {
-        // Background image with exact Figma specifications
+        val logo = createRef()
+        
+        // Logo positioned at center of the available space
         Image(
             painter = painterResource(id = R.drawable.ic_logo),
-            contentDescription = null
+            contentDescription = "Happy Baby Style Logo",
+            modifier = Modifier.constrainAs(logo) {
+                top.linkTo(parent.top)
+                start.linkTo(parent.start)
+                end.linkTo(parent.end)
+                bottom.linkTo(parent.bottom)
+            }
         )
     }
 }
 
 /**
  * Action buttons section matching Figma's Depth 1, Frame 1 structure
- * Exact spacing and layout from Figma design
+ * Exact spacing and layout from Figma design using ConstraintLayout for precise positioning
  */
 @Composable
 fun ActionButtonsSection(
@@ -123,27 +149,38 @@ fun ActionButtonsSection(
     onSignUpClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
+    ConstraintLayout(
         modifier = modifier
             .background(Color.White.copy(alpha = 0.95f))
-            .padding(horizontal = 16.dp, vertical = 12.dp), // px-4 py-3 from Figma
-        verticalArrangement = Arrangement.spacedBy(12.dp), // gap-3 from Figma
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(horizontal = 16.dp, vertical = 12.dp) // px-4 py-3 from Figma
     ) {
+        val (loginButton, signUpButton) = createRefs()
+        
         // Login Button - exact Figma specifications
         FigmaLoginButton(
             text = uiState.loginButtonText,
             onClick = onLoginClick,
             enabled = uiState.isLoginEnabled,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.constrainAs(loginButton) {
+                top.linkTo(parent.top)
+                start.linkTo(parent.start)
+                end.linkTo(parent.end)
+                width = Dimension.fillToConstraints
+            }
         )
 
-        // Sign Up Button - exact Figma specifications
+        // Sign Up Button - exact Figma specifications with 12dp spacing
         FigmaSignUpButton(
             text = uiState.signUpButtonText,
             onClick = onSignUpClick,
             enabled = uiState.isSignUpEnabled,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.constrainAs(signUpButton) {
+                top.linkTo(loginButton.bottom, margin = 12.dp) // gap-3 from Figma
+                start.linkTo(parent.start)
+                end.linkTo(parent.end)
+                bottom.linkTo(parent.bottom)
+                width = Dimension.fillToConstraints
+            }
         )
     }
 }
