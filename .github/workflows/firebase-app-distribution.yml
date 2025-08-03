@@ -1,0 +1,145 @@
+name: Firebase App Distribution
+
+on:
+  push:
+    branches: [ develop, staging, main ]
+  pull_request:
+    branches: [ develop, main ]
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type to deploy'
+        required: true
+        default: 'debug'
+        type: choice
+        options:
+          - debug
+          - staging
+          - release
+      release_notes:
+        description: 'Custom release notes'
+        required: false
+        type: string
+
+jobs:
+  build_and_distribute:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up JDK 11
+      uses: actions/setup-java@v4
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+        
+    - name: Setup Gradle
+      uses: gradle/gradle-build-action@v2
+      
+    - name: Cache Gradle packages
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+          
+    - name: Make gradlew executable
+      run: chmod +x ./gradlew
+      
+    - name: Determine build type
+      id: build_type
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "type=${{ github.event.inputs.build_type }}" >> $GITHUB_OUTPUT
+        elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          echo "type=release" >> $GITHUB_OUTPUT
+        elif [ "${{ github.ref }}" = "refs/heads/staging" ]; then
+          echo "type=staging" >> $GITHUB_OUTPUT
+        else
+          echo "type=debug" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Create release notes
+      id: release_notes
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.release_notes }}" ]; then
+          echo "${{ github.event.inputs.release_notes }}" > temp-release-notes.txt
+        else
+          echo "🚀 Automated build from branch: ${{ github.ref_name }}" > temp-release-notes.txt
+          echo "📝 Commit: ${{ github.sha }}" >> temp-release-notes.txt
+          echo "👤 Author: ${{ github.actor }}" >> temp-release-notes.txt
+          echo "🕐 Built on: $(date)" >> temp-release-notes.txt
+          echo "" >> temp-release-notes.txt
+          echo "📋 Recent changes:" >> temp-release-notes.txt
+          git log --oneline -5 >> temp-release-notes.txt
+        fi
+        
+    - name: Create Firebase service account file
+      run: |
+        echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}' > app/firebase-service-account.json
+        
+    - name: Build APK
+      run: |
+        BUILD_TYPE="${{ steps.build_type.outputs.type }}"
+        if [ "$BUILD_TYPE" = "debug" ]; then
+          ./gradlew assembleDebug
+        elif [ "$BUILD_TYPE" = "staging" ]; then
+          ./gradlew assembleStaging
+        else
+          ./gradlew assembleRelease
+        fi
+        
+    - name: Distribute to Firebase App Distribution
+      run: |
+        BUILD_TYPE="${{ steps.build_type.outputs.type }}"
+        VARIANT_NAME=""
+        if [ "$BUILD_TYPE" = "debug" ]; then
+          VARIANT_NAME="Debug"
+        elif [ "$BUILD_TYPE" = "staging" ]; then
+          VARIANT_NAME="Staging"
+        else
+          VARIANT_NAME="Release"
+        fi
+        
+        ./gradlew "appDistributionUpload$VARIANT_NAME" \
+          -PfirebaseAppDistribution.serviceCredentialsFile=app/firebase-service-account.json \
+          -PfirebaseAppDistribution.releaseNotesFile=temp-release-notes.txt \
+          -PfirebaseAppDistribution.groups=happy-baby-style-testers
+          
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: app-${{ steps.build_type.outputs.type }}-${{ github.run_number }}
+        path: app/build/outputs/apk/**/*.apk
+        
+    - name: Cleanup
+      if: always()
+      run: |
+        rm -f app/firebase-service-account.json
+        rm -f temp-release-notes.txt
+        
+    - name: Comment PR with distribution link
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `🚀 **Firebase App Distribution**
+            
+            Your PR has been built and distributed to testers!
+            
+            **Build Type**: ${{ steps.build_type.outputs.type }}
+            **Build Number**: ${{ github.run_number }}
+            
+            Check the [Firebase Console](https://console.firebase.google.com/project/happy-baby-style/appdistribution) for distribution details.
+            
+            Testers in the 'happy-baby-style-testers' group will receive a notification.`
+          })

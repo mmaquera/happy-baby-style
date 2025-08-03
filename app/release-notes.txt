@@ -1,0 +1,19 @@
+🎯 Happy Baby Style - Nueva versión disponible
+
+✨ Mejoras en esta versión:
+- Refactorización completa con ConstraintLayout para mejor rendimiento
+- Nuevo design system con componentes reutilizables
+- Migración a Firebase App Distribution para testing
+- Optimizaciones en la UI para mejor experiencia de usuario
+
+🐛 Correcciones:
+- Mejorada la alineación de elementos en las pantallas
+- Optimización del código para mejor mantenibilidad
+
+📋 Para testing:
+- Prueba el flujo de login y navegación
+- Verifica que todos los botones respondan correctamente
+- Comprueba la consistencia visual del diseño
+- Reporta cualquier bug o sugerencia en el canal de testing
+
+¡Gracias por ayudar a mejorar Happy Baby Style! 👶✨
