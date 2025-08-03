@@ -54,6 +54,9 @@ import com.mmaquera.happybabystyle.ui.theme.HappyBabyStyleTheme
 import com.mmaquera.happybabystyle.ui.theme.PrimaryText
 import com.mmaquera.happybabystyle.ui.theme.SecondaryText
 import com.mmaquera.happybabystyle.ui.theme.SurfaceBackground
+import com.mmaquera.happybabystyle.view.login.components.ErrorDialog
+import com.mmaquera.happybabystyle.view.login.components.GoogleSignInButton
+import com.mmaquera.happybabystyle.view.login.components.LoginTextField
 
 @Composable
 fun LoginScreen(
@@ -67,7 +70,11 @@ fun LoginScreen(
     println("🏗️ Is Activity context: ${context is Activity}")
     
     val viewModel: LoginViewModel = viewModel { 
-        LoginViewModel(ServiceProvider.getModernAuthService(context))
+        LoginViewModel(
+            loginWithEmailUseCase = ServiceProvider.getLoginWithEmailUseCase(context),
+            loginWithGoogleUseCase = ServiceProvider.getLoginWithGoogleUseCase(context),
+            validateCredentialsUseCase = ServiceProvider.getValidateCredentialsUseCase(context)
+        )
     }
     val state = viewModel.state
 
@@ -139,11 +146,9 @@ fun LoginScreen(
             }
         )
 
-        // Social Login Buttons
-        SocialLoginButtons(
+        // Google Sign-In Button
+        GoogleSignInButton(
             onGoogleClick = { viewModel.handleEvent(LoginEvent.SignInWithGoogle) },
-            onFacebookClick = { viewModel.handleEvent(LoginEvent.SignInWithFacebook) },
-            onAppleClick = { viewModel.handleEvent(LoginEvent.SignInWithApple) },
             isGoogleLoading = state.isGoogleSignInLoading,
             modifier = Modifier.constrainAs(socialButtons) {
                 top.linkTo(welcomeSubtitle.bottom, margin = 32.dp)
@@ -254,155 +259,7 @@ fun LoginScreen(
     }
 }
 
-@Composable
-private fun SocialLoginButtons(
-    onGoogleClick: () -> Unit,
-    onFacebookClick: () -> Unit,
-    onAppleClick: () -> Unit,
-    isGoogleLoading: Boolean = false,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        SocialLoginButton(
-            text = stringResource(id = R.string.continue_with_google),
-            onClick = onGoogleClick,
-            isLoading = isGoogleLoading
-        )
 
-        SocialLoginButton(
-            text = stringResource(id = R.string.continue_with_facebook),
-            onClick = onFacebookClick
-        )
-
-        SocialLoginButton(
-            text = stringResource(id = R.string.continue_with_apple),
-            onClick = onAppleClick
-        )
-    }
-}
-
-@Composable
-private fun SocialLoginButton(
-    text: String,
-    onClick: () -> Unit,
-    isLoading: Boolean = false
-) {
-    Button(
-        onClick = onClick,
-        enabled = !isLoading,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(40.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = SurfaceBackground
-        ),
-        shape = RoundedCornerShape(20.dp)
-    ) {
-        if (isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(16.dp),
-                color = PrimaryText,
-                strokeWidth = 2.dp
-            )
-        } else {
-            Text(
-                text = text,
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = PrimaryText
-                )
-            )
-        }
-    }
-}
-
-@Composable
-private fun LoginTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    placeholder: String,
-    modifier: Modifier = Modifier,
-    isPassword: Boolean = false,
-    showPassword: Boolean = false,
-    onTogglePasswordVisibility: (() -> Unit)? = null,
-    keyboardOptions: KeyboardOptions = KeyboardOptions.Default
-) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        placeholder = {
-            Text(
-                text = placeholder,
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    fontSize = 16.sp,
-                    color = SecondaryText
-                )
-            )
-        },
-        modifier = modifier
-            .fillMaxWidth()
-            .height(56.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = SurfaceBackground,
-            unfocusedContainerColor = SurfaceBackground,
-            focusedBorderColor = Color.Transparent,
-            unfocusedBorderColor = Color.Transparent,
-            focusedPlaceholderColor = SecondaryText,
-            unfocusedPlaceholderColor = SecondaryText
-        ),
-        shape = RoundedCornerShape(12.dp),
-        visualTransformation = if (isPassword && !showPassword) {
-            PasswordVisualTransformation()
-        } else {
-            VisualTransformation.None
-        },
-        keyboardOptions = keyboardOptions,
-        trailingIcon = if (isPassword) {
-            {
-                IconButton(onClick = { onTogglePasswordVisibility?.invoke() }) {
-                    Icon(
-                        imageVector = if (showPassword) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                        contentDescription = if (showPassword) "Hide password" else "Show password",
-                        tint = SecondaryText
-                    )
-                }
-            }
-        } else null
-    )
-}
-
-@Composable
-private fun ErrorDialog(
-    message: String,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = "Error",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        },
-        text = {
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("OK")
-            }
-        }
-    )
-}
 
 @Preview(name = "Login Screen", showBackground = true)
 @Composable

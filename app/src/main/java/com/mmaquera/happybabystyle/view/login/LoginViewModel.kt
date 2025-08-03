@@ -5,10 +5,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-// import com.google.android.gms.auth.api.signin.GoogleSignInAccount  // DEPRECADO
-// import com.google.android.gms.tasks.Task  // DEPRECADO
-import com.mmaquera.happybabystyle.data.service.AuthResult
-import com.mmaquera.happybabystyle.data.service.ModernAuthService
+import com.mmaquera.happybabystyle.domain.model.AuthResult
+import com.mmaquera.happybabystyle.domain.model.AuthException
+import com.mmaquera.happybabystyle.domain.usecase.LoginWithEmailUseCase
+import com.mmaquera.happybabystyle.domain.usecase.LoginWithGoogleUseCase
+import com.mmaquera.happybabystyle.domain.usecase.ValidateCredentialsUseCase
+import com.mmaquera.happybabystyle.domain.usecase.GetCurrentUserUseCase
+import com.mmaquera.happybabystyle.domain.usecase.LogoutUseCase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 // import javax.inject.Inject  // Temporalmente deshabilitado
@@ -21,7 +24,10 @@ data class LoginState(
     val isLoggedIn: Boolean = false,
     val errorMessage: String? = null,
     val showPassword: Boolean = false,
-    val isGoogleSignInLoading: Boolean = false
+    val isGoogleSignInLoading: Boolean = false,
+    val emailError: String? = null,
+    val passwordError: String? = null,
+    val isFormValid: Boolean = false
 )
 
 sealed class LoginEvent {
@@ -30,41 +36,33 @@ sealed class LoginEvent {
     object TogglePasswordVisibility : LoginEvent()
     object SignIn : LoginEvent()
     object SignInWithGoogle : LoginEvent()
-    object SignInWithFacebook : LoginEvent()
-    object SignInWithApple : LoginEvent()
     object ForgotPassword : LoginEvent()
     object SignUp : LoginEvent()
 }
 
 // @HiltViewModel  // Temporalmente deshabilitado
 class LoginViewModel(
-    private val modernAuthService: ModernAuthService? = null  // Inyección temporal hasta resolver Hilt
+    private val loginWithEmailUseCase: LoginWithEmailUseCase? = null,
+    private val loginWithGoogleUseCase: LoginWithGoogleUseCase? = null,
+    private val validateCredentialsUseCase: ValidateCredentialsUseCase? = null,
+    private val getCurrentUserUseCase: GetCurrentUserUseCase? = null,
+    private val logoutUseCase: LogoutUseCase? = null
 ) : ViewModel() {
     
     var state by mutableStateOf(LoginState())
         private set
     
-    // Dummy data for demonstration (mantener para email/password local)
-    private val dummyUsers = mapOf(
-        "user@example.com" to "password123",
-        "test@happybabystyle.com" to "test123",
-        "demo@baby.com" to "demo456"
-    )
+    // Use Cases required for Clean Architecture
+    // All authentication logic is handled through use cases
     
     fun handleEvent(event: LoginEvent) {
         when (event) {
             is LoginEvent.EmailChanged -> {
-                state = state.copy(
-                    email = event.email,
-                    errorMessage = null
-                )
+                handleEmailChanged(event.email)
             }
             
             is LoginEvent.PasswordChanged -> {
-                state = state.copy(
-                    password = event.password,
-                    errorMessage = null
-                )
+                handlePasswordChanged(event.password)
             }
             
             is LoginEvent.TogglePasswordVisibility -> {
@@ -74,19 +72,11 @@ class LoginViewModel(
             }
             
             is LoginEvent.SignIn -> {
-                performSignIn()
+                performEmailSignIn()
             }
             
             is LoginEvent.SignInWithGoogle -> {
                 performGoogleSignIn()
-            }
-            
-            is LoginEvent.SignInWithFacebook -> {
-                performSocialSignIn("Facebook")
-            }
-            
-            is LoginEvent.SignInWithApple -> {
-                performSocialSignIn("Apple")
             }
             
             is LoginEvent.ForgotPassword -> {
@@ -99,49 +89,128 @@ class LoginViewModel(
         }
     }
     
-    private fun performSignIn() {
-        if (state.email.isEmpty() || state.password.isEmpty()) {
-            state = state.copy(
-                errorMessage = "Por favor completa todos los campos"
-            )
-            return
-        }
-        
-        state = state.copy(isLoading = true)
-        
-        // Simulate network delay
-        viewModelScope.launch {
-            delay(1500) // Simulate API call
-            
-            val isValidUser = dummyUsers[state.email] == state.password
-            
-            if (isValidUser) {
-                state = state.copy(
-                    isLoading = false,
-                    isLoggedIn = true,
-                    errorMessage = null
-                )
-            } else {
-                state = state.copy(
-                    isLoading = false,
-                    errorMessage = "Credenciales incorrectas. Intenta con:\nuser@example.com / password123"
-                )
+    /**
+     * Maneja el cambio de email con validación en tiempo real
+     */
+    private fun handleEmailChanged(email: String) {
+        state = state.copy(email = email, errorMessage = null)
+        validateCredentials()
+    }
+    
+    /**
+     * Maneja el cambio de contraseña con validación en tiempo real
+     */
+    private fun handlePasswordChanged(password: String) {
+        state = state.copy(password = password, errorMessage = null)
+        validateCredentials()
+    }
+    
+    /**
+     * Valida las credenciales usando el Use Case
+     */
+    private fun validateCredentials() {
+        validateCredentialsUseCase?.let { useCase ->
+            viewModelScope.launch {
+                try {
+                    val params = ValidateCredentialsUseCase.Params(
+                        email = state.email,
+                        password = state.password
+                    )
+                    val result = useCase(params)
+                    
+                    state = state.copy(
+                        emailError = result.emailValidation.emailError,
+                        passwordError = result.passwordValidation.passwordError,
+                        isFormValid = result.isValid
+                    )
+                } catch (exception: Exception) {
+                    // Manejar error de validación si es necesario
+                }
             }
         }
     }
     
     /**
-     * Procesar autenticación con Google usando Credential Manager API
+     * Realiza login con email y contraseña usando Clean Architecture
+     */
+    private fun performEmailSignIn() {
+        if (loginWithEmailUseCase == null) {
+            state = state.copy(
+                errorMessage = "Servicio de autenticación no disponible"
+            )
+            return
+        }
+        
+        viewModelScope.launch {
+            val params = LoginWithEmailUseCase.Params(
+                email = state.email,
+                password = state.password
+            )
+            
+            loginWithEmailUseCase(params).collect { result ->
+                when (result) {
+                    is AuthResult.Loading -> {
+                        state = state.copy(
+                            isLoading = true,
+                            errorMessage = null
+                        )
+                    }
+                    
+                    is AuthResult.Success -> {
+                        state = state.copy(
+                            isLoading = false,
+                            isLoggedIn = true,
+                            errorMessage = null
+                        )
+                    }
+                    
+                    is AuthResult.Error -> {
+                        state = state.copy(
+                            isLoading = false,
+                            errorMessage = getErrorMessage(result.exception)
+                        )
+                    }
+                }
+            }
+        }
+    }
+    
+
+    
+    /**
+     * Procesar autenticación con Google usando Clean Architecture
      */
     private fun performGoogleSignIn() {
+        if (loginWithGoogleUseCase == null) {
+            state = state.copy(
+                errorMessage = "Servicio de Google Sign-In no disponible"
+            )
+            return
+        }
+        
         state = state.copy(
             isGoogleSignInLoading = true,
             errorMessage = null
         )
         
         viewModelScope.launch {
-            if (modernAuthService != null) {
-                when (val result = modernAuthService.signInWithGoogle()) {
+            // Para Google necesitamos obtener el ID token primero
+            // Por ahora simulamos que ya lo tenemos - en una implementación real
+            // esto vendría del Credential Manager
+            val params = LoginWithGoogleUseCase.Params(
+                idToken = "mock_id_token", // Esto debería venir del Credential Manager
+                accessToken = null
+            )
+            
+            loginWithGoogleUseCase(params).collect { result ->
+                when (result) {
+                    is AuthResult.Loading -> {
+                        state = state.copy(
+                            isGoogleSignInLoading = true,
+                            errorMessage = null
+                        )
+                    }
+                    
                     is AuthResult.Success -> {
                         state = state.copy(
                             isGoogleSignInLoading = false,
@@ -149,40 +218,34 @@ class LoginViewModel(
                             errorMessage = null
                         )
                     }
+                    
                     is AuthResult.Error -> {
                         state = state.copy(
                             isGoogleSignInLoading = false,
-                            errorMessage = result.message
+                            errorMessage = getErrorMessage(result.exception)
                         )
                     }
-                    is AuthResult.Loading -> {
-                        // Ya está en loading
-                    }
                 }
-            } else {
-                // Fallback temporal hasta que se resuelva la inyección de dependencias
-                delay(1000)
-                state = state.copy(
-                    isGoogleSignInLoading = false,
-                    isLoggedIn = true,
-                    errorMessage = null
-                )
             }
         }
     }
     
-    private fun performSocialSignIn(provider: String) {
-        state = state.copy(isLoading = true)
-        
-        // Simulate social login for Facebook/Apple
-        viewModelScope.launch {
-            delay(2000) // Simulate social login delay
-            
-            state = state.copy(
-                isLoading = false,
-                isLoggedIn = true,
-                errorMessage = "Autenticación con $provider simulada exitosamente"
-            )
+
+    
+    /**
+     * Convierte AuthException a mensaje de error legible
+     */
+    private fun getErrorMessage(exception: AuthException): String {
+        return when (exception) {
+            is AuthException.InvalidCredentials -> exception.message ?: "Credenciales inválidas"
+            is AuthException.UserNotFound -> exception.message ?: "Usuario no encontrado"
+            is AuthException.EmailNotVerified -> exception.message ?: "Email no verificado"
+            is AuthException.AccountDisabled -> exception.message ?: "Cuenta deshabilitada"
+            is AuthException.TooManyAttempts -> exception.message ?: "Demasiados intentos"
+            is AuthException.NetworkError -> exception.message ?: "Error de conexión"
+            is AuthException.ServerError -> exception.message ?: "Error del servidor"
+            is AuthException.ConfigurationError -> exception.message ?: "Error de configuración"
+            is AuthException.UnknownError -> exception.message ?: "Error desconocido"
         }
     }
     

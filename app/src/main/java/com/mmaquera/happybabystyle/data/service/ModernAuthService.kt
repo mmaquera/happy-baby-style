@@ -321,6 +321,50 @@ class ModernAuthService(
     fun isAuthenticated(): Boolean = currentUser != null
     
     /**
+     * Inicia sesión con email y contraseña usando Supabase Auth
+     */
+    suspend fun signInWithEmail(email: String, password: String): AuthResult {
+        return try {
+            val authRequest = mapOf(
+                "email" to email,
+                "password" to password
+            )
+
+            val response = supabaseClient.httpClient.post("${supabaseClient.getBaseUrl()}/auth/v1/token?grant_type=password") {
+                contentType(ContentType.Application.Json)
+                header("apikey", supabaseClient.getAnonKey())
+                setBody(authRequest)
+            }
+
+            if (response.status.isSuccess()) {
+                val authResponse = response.body<SupabaseAuthResponse>()
+                
+                // Actualizar token en el cliente
+                supabaseClient.updateAccessToken(authResponse.accessToken)
+                currentUser = authResponse.user
+
+                // Intentar obtener o crear perfil
+                val profile = getOrCreateUserProfile(authResponse.user)
+                currentProfile = profile
+
+                AuthResult.Success(authResponse.user, profile)
+            } else {
+                val errorBody = response.bodyAsText()
+                val errorMessage = when {
+                    errorBody.contains("invalid_credentials") -> "Credenciales incorrectas"
+                    errorBody.contains("email_not_confirmed") -> "Debes verificar tu email antes de iniciar sesión"
+                    errorBody.contains("too_many_requests") -> "Demasiados intentos. Intenta más tarde"
+                    else -> "Error de autenticación: $errorBody"
+                }
+                AuthResult.Error(errorMessage)
+            }
+
+        } catch (e: Exception) {
+            AuthResult.Error("Error de conexión: ${e.message}", e)
+        }
+    }
+    
+    /**
      * TEMPORAL: Crea resultado de autenticación mock para desarrollo
      * mientras se resuelve error 28444 de Google Cloud Console
      */
