@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.app.distribution)
 }
 
 android {
@@ -21,12 +22,32 @@ android {
     }
 
     buildTypes {
-        release {
+        debug {
             isMinifyEnabled = false
+            isDebuggable = true
+            versionNameSuffix = "-debug"
+            // Temporarily removed applicationIdSuffix for Google Services compatibility
+            // applicationIdSuffix = ".debug"
+        }
+        
+        create("staging") {
+            initWith(getByName("debug"))
+            isMinifyEnabled = false
+            isDebuggable = true
+            versionNameSuffix = "-staging"
+            // Temporarily removed applicationIdSuffix for Google Services compatibility
+            // applicationIdSuffix = ".staging"
+            matchingFallbacks += listOf("debug")
+        }
+        
+        release {
+            isMinifyEnabled = true
+            isDebuggable = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug") // TODO: Add release signing config
         }
     }
     compileOptions {
@@ -87,4 +108,36 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+}
+
+// Firebase App Distribution Configuration
+firebaseAppDistribution {
+    // App configuration
+    appId = "1:581901746036:android:5a5b5302d77d7ac73bf621"
+    
+    // Default service account (can be overridden by CI/CD)
+    serviceCredentialsFile = project.findProperty("FIREBASE_SERVICE_ACCOUNT_FILE")?.toString()
+        ?: "${projectDir}/firebase-service-account.json"
+    
+    // Default release notes
+    releaseNotesFile = "${projectDir}/release-notes.txt"
+    
+    // Default groups
+    groups = "happy-baby-style-testers"
+    
+    // Note: All build types now use the same app ID since we removed applicationIdSuffix
+    // This allows testing different builds with the same Firebase project
+}
+
+// Custom distribution tasks for different environments
+tasks.register("distributeDebugToFirebase") {
+    group = "distribution"
+    description = "Distributes debug build to Firebase App Distribution"
+    dependsOn("assembleDebug", "appDistributionUploadDebug")
+}
+
+tasks.register("distributeStagingToFirebase") {
+    group = "distribution"
+    description = "Distributes staging build to Firebase App Distribution" 
+    dependsOn("assembleStaging", "appDistributionUploadStaging")
 }
