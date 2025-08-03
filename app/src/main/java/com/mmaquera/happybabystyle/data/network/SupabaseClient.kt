@@ -6,12 +6,12 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.logging.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
-import javax.inject.Inject
-import javax.inject.Singleton
+// import javax.inject.Inject  // Temporalmente deshabilitado
+// import javax.inject.Singleton  // Temporalmente deshabilitado
 import com.mmaquera.happybabystyle.data.config.AppConfig
 
-@Singleton
-class SupabaseClient @Inject constructor() {
+// @Singleton  // Temporalmente deshabilitado
+class SupabaseClient() {
     
     companion object {
         // Configuración de Supabase desde AppConfig

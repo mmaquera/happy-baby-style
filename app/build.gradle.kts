@@ -106,7 +106,12 @@ dependencies {
     implementation(libs.ktor.client.logging)
     implementation(libs.ktor.client.auth)
     
-    // Google Authentication
+    // Google Authentication - Credential Manager (Moderno)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services)
+    implementation(libs.google.identity.googleid)
+    
+    // Google Authentication - Legacy (mantener temporalmente)
     implementation(libs.google.auth)
     
     // Hilt Dependency Injection - Temporalmente deshabilitado

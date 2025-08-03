@@ -5,10 +5,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.tasks.Task
-// import com.mmaquera.happybabystyle.data.service.AuthResult  // Temporalmente deshabilitado
-// import com.mmaquera.happybabystyle.data.service.AuthService  // Temporalmente deshabilitado
+// import com.google.android.gms.auth.api.signin.GoogleSignInAccount  // DEPRECADO
+// import com.google.android.gms.tasks.Task  // DEPRECADO
+import com.mmaquera.happybabystyle.data.service.AuthResult
+import com.mmaquera.happybabystyle.data.service.ModernAuthService
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 // import javax.inject.Inject  // Temporalmente deshabilitado
@@ -21,7 +21,7 @@ data class LoginState(
     val isLoggedIn: Boolean = false,
     val errorMessage: String? = null,
     val showPassword: Boolean = false,
-    val needsGoogleSignIn: Boolean = false // Para trigger del Google Sign-In
+    val isGoogleSignInLoading: Boolean = false
 )
 
 sealed class LoginEvent {
@@ -30,17 +30,15 @@ sealed class LoginEvent {
     object TogglePasswordVisibility : LoginEvent()
     object SignIn : LoginEvent()
     object SignInWithGoogle : LoginEvent()
-    data class GoogleSignInResult(val task: Task<GoogleSignInAccount>) : LoginEvent()
     object SignInWithFacebook : LoginEvent()
     object SignInWithApple : LoginEvent()
     object ForgotPassword : LoginEvent()
     object SignUp : LoginEvent()
-    object ClearGoogleSignInTrigger : LoginEvent()
 }
 
 // @HiltViewModel  // Temporalmente deshabilitado
 class LoginViewModel(
-    // private val authService: AuthService  // Temporalmente deshabilitado
+    private val modernAuthService: ModernAuthService? = null  // Inyección temporal hasta resolver Hilt
 ) : ViewModel() {
     
     var state by mutableStateOf(LoginState())
@@ -80,20 +78,7 @@ class LoginViewModel(
             }
             
             is LoginEvent.SignInWithGoogle -> {
-                // Trigger para que la UI lance Google Sign-In Intent
-                state = state.copy(
-                    needsGoogleSignIn = true,
-                    errorMessage = null
-                )
-            }
-            
-            is LoginEvent.GoogleSignInResult -> {
-                // Procesar resultado de Google Sign-In
-                performGoogleAuthentication(event.task)
-            }
-            
-            is LoginEvent.ClearGoogleSignInTrigger -> {
-                state = state.copy(needsGoogleSignIn = false)
+                performGoogleSignIn()
             }
             
             is LoginEvent.SignInWithFacebook -> {
@@ -146,43 +131,43 @@ class LoginViewModel(
     }
     
     /**
-     * Procesar autenticación con Google usando AuthService
+     * Procesar autenticación con Google usando Credential Manager API
      */
-    private fun performGoogleAuthentication(task: Task<GoogleSignInAccount>) {
+    private fun performGoogleSignIn() {
         state = state.copy(
-            isLoading = true,
-            needsGoogleSignIn = false,
+            isGoogleSignInLoading = true,
             errorMessage = null
         )
         
         viewModelScope.launch {
-            // Temporalmente comentado - requiere AuthService y Hilt
-            // when (val result = authService.handleGoogleSignInResult(task)) {
-            //     is AuthResult.Success -> {
-            //         state = state.copy(
-            //             isLoading = false,
-            //             isLoggedIn = true,
-            //             errorMessage = null
-            //         )
-            //     }
-            //     is AuthResult.Error -> {
-            //         state = state.copy(
-            //             isLoading = false,
-            //             errorMessage = result.message
-            //         )
-            //     }
-            //     is AuthResult.Loading -> {
-            //         // Ya está en loading
-            //     }
-            // }
-            
-            // Simulación temporal para testing
-            delay(1000)
-            state = state.copy(
-                isLoading = false,
-                isLoggedIn = true,
-                errorMessage = null
-            )
+            if (modernAuthService != null) {
+                when (val result = modernAuthService.signInWithGoogle()) {
+                    is AuthResult.Success -> {
+                        state = state.copy(
+                            isGoogleSignInLoading = false,
+                            isLoggedIn = true,
+                            errorMessage = null
+                        )
+                    }
+                    is AuthResult.Error -> {
+                        state = state.copy(
+                            isGoogleSignInLoading = false,
+                            errorMessage = result.message
+                        )
+                    }
+                    is AuthResult.Loading -> {
+                        // Ya está en loading
+                    }
+                }
+            } else {
+                // Fallback temporal hasta que se resuelva la inyección de dependencias
+                delay(1000)
+                state = state.copy(
+                    isGoogleSignInLoading = false,
+                    isLoggedIn = true,
+                    errorMessage = null
+                )
+            }
         }
     }
     

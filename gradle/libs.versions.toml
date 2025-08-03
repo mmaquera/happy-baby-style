@@ -22,6 +22,8 @@ firebaseBom = "33.5.1"
 firebaseAppDistribution = "5.0.0"
 ktor = "2.3.12"
 googleAuth = "21.2.0"
+credentialManager = "1.3.0"
+googleIdPlugin = "1.1.1"
 hilt = "2.47"
 ksp = "2.0.21-1.0.25"
 
@@ -74,7 +76,12 @@ ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serializatio
 ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
 ktor-client-auth = { group = "io.ktor", name = "ktor-client-auth", version.ref = "ktor" }
 
-# Google Authentication
+# Google Authentication - Credential Manager (Moderno)
+androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentialManager" }
+androidx-credentials-play-services = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentialManager" }
+google-identity-googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleIdPlugin" }
+
+# Google Authentication - Legacy (para comparación)
 google-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "googleAuth" }
 
 # Hilt Dependency Injection
