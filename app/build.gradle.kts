@@ -5,6 +5,8 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.google.services)
     alias(libs.plugins.firebase.app.distribution)
+    // alias(libs.plugins.hilt)  // Temporalmente deshabilitado
+    // alias(libs.plugins.ksp)
 }
 
 android {
@@ -95,6 +97,22 @@ dependencies {
     // Firebase
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
+    
+    // Ktor Client
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.android)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.kotlinx.json)
+    implementation(libs.ktor.client.logging)
+    implementation(libs.ktor.client.auth)
+    
+    // Google Authentication
+    implementation(libs.google.auth)
+    
+    // Hilt Dependency Injection - Temporalmente deshabilitado
+    // implementation(libs.hilt.android)
+    // implementation(libs.hilt.navigation.compose)
+    // ksp(libs.hilt.compiler)
     
     // Testing
     testImplementation(libs.junit)

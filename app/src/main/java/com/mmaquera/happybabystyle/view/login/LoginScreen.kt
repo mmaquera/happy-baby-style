@@ -27,9 +27,13 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import com.google.android.gms.auth.api.signin.GoogleSignIn
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -43,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+// import androidx.hilt.navigation.compose.hiltViewModel  // Temporalmente deshabilitado
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mmaquera.happybabystyle.R
 import com.mmaquera.happybabystyle.ui.theme.BabyStyleText
@@ -58,6 +63,15 @@ fun LoginScreen(
     onNavigateToSignUp: () -> Unit = {}
 ) {
     val state = viewModel.state
+    val context = LocalContext.current
+    
+    // Google Sign-In launcher
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        viewModel.handleEvent(LoginEvent.GoogleSignInResult(task))
+    }
 
     // Handle successful login
     LaunchedEffect(state.isLoggedIn) {
@@ -65,6 +79,21 @@ fun LoginScreen(
             onNavigateToHome()
         }
     }
+    
+    // Handle Google Sign-In trigger - Temporalmente comentado
+    // LaunchedEffect(state.needsGoogleSignIn) {
+    //     if (state.needsGoogleSignIn) {
+    //         try {
+    //             val signInIntent = viewModel.getGoogleSignInClient().signInIntent
+    //             googleSignInLauncher.launch(signInIntent)
+    //         } catch (e: Exception) {
+    //             viewModel.handleEvent(LoginEvent.GoogleSignInResult(
+    //                 com.google.android.gms.tasks.Tasks.forException(e)
+    //             ))
+    //         }
+    //         viewModel.handleEvent(LoginEvent.ClearGoogleSignInTrigger)
+    //     }
+    // }
 
     ConstraintLayout(
         modifier = Modifier
