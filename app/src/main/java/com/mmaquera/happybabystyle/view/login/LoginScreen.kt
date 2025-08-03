@@ -1,9 +1,9 @@
 package com.mmaquera.happybabystyle.view.login
 
+import PrimaryButton
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -29,7 +29,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -41,9 +40,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.mmaquera.happybabystyle.ui.theme.BabyStyleButton
-import com.mmaquera.happybabystyle.ui.theme.BabyStyleSurface
 import com.mmaquera.happybabystyle.ui.theme.BabyStyleText
 import com.mmaquera.happybabystyle.ui.theme.HappyBabyStyleTheme
 import com.mmaquera.happybabystyle.ui.theme.PrimaryText
@@ -57,151 +56,180 @@ fun LoginScreen(
     onNavigateToSignUp: () -> Unit = {}
 ) {
     val state = viewModel.state
-    
+
     // Handle successful login
     LaunchedEffect(state.isLoggedIn) {
         if (state.isLoggedIn) {
             onNavigateToHome()
         }
     }
-    
-    BabyStyleSurface {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Header
-            Spacer(modifier = Modifier.height(32.dp))
-            
-            BabyStyleText(
-                text = "Happy Baby Style",
-                style = MaterialTheme.typography.headlineMedium.copy(
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            )
-            
-            Spacer(modifier = Modifier.height(32.dp))
-            
-            // Welcome Text
-            Text(
-                text = "Welcome Back",
-                style = MaterialTheme.typography.headlineLarge.copy(
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = PrimaryText
-                ),
-                textAlign = TextAlign.Center
-            )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Text(
-                text = "Sign in to continue your shopping experience",
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    fontSize = 16.sp,
-                    color = SecondaryText
-                ),
-                textAlign = TextAlign.Center
-            )
-            
-            Spacer(modifier = Modifier.height(32.dp))
-            
-            // Social Login Buttons
-            SocialLoginButtons(
-                onGoogleClick = { viewModel.handleEvent(LoginEvent.SignInWithGoogle) },
-                onFacebookClick = { viewModel.handleEvent(LoginEvent.SignInWithFacebook) },
-                onAppleClick = { viewModel.handleEvent(LoginEvent.SignInWithApple) }
-            )
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            // Email Input
-            LoginTextField(
-                value = state.email,
-                onValueChange = { viewModel.handleEvent(LoginEvent.EmailChanged(it)) },
-                placeholder = "Email",
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Email,
-                    imeAction = ImeAction.Next
-                )
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Password Input
-            LoginTextField(
-                value = state.password,
-                onValueChange = { viewModel.handleEvent(LoginEvent.PasswordChanged(it)) },
-                placeholder = "Password",
-                isPassword = true,
-                showPassword = state.showPassword,
-                onTogglePasswordVisibility = { viewModel.handleEvent(LoginEvent.TogglePasswordVisibility) },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Password,
-                    imeAction = ImeAction.Done
-                )
-            )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            // Forgot Password
-            Text(
-                text = "Forgot Password?",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontSize = 14.sp,
-                    color = SecondaryText
-                ),
-                modifier = Modifier
-                    .align(Alignment.Start)
-                    .clickable { viewModel.handleEvent(LoginEvent.ForgotPassword) }
-            )
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            // Sign In Button
-            BabyStyleButton(
-                onClick = { viewModel.handleEvent(LoginEvent.SignIn) },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = !state.isLoading
-            ) {
-                if (state.isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        strokeWidth = 2.dp
-                    )
-                } else {
-                    Text(
-                        text = "Sign In",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                }
+
+    ConstraintLayout(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp)
+    ) {
+        // Create references for all composables
+        val (
+            header,
+            welcomeTitle,
+            welcomeSubtitle,
+            socialButtons,
+            emailField,
+            passwordField,
+            forgotPassword,
+            signInButton,
+            signUpLink
+        ) = createRefs()
+
+        // Header
+        BabyStyleText(
+            text = "Happy Baby Style",
+            style = MaterialTheme.typography.headlineMedium.copy(
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            ),
+            modifier = Modifier.constrainAs(header) {
+                top.linkTo(parent.top, margin = 32.dp)
+                centerHorizontallyTo(parent)
             }
-            
-            Spacer(modifier = Modifier.height(32.dp))
-            
-            // Sign Up Link
-            Text(
-                text = "Don't have an account? Sign Up",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontSize = 14.sp,
-                    color = SecondaryText
-                ),
-                textAlign = TextAlign.Center,
-                modifier = Modifier.clickable { onNavigateToSignUp() }
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
+        )
+
+        // Welcome Text
+        Text(
+            text = "Welcome Back",
+            style = MaterialTheme.typography.headlineLarge.copy(
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                color = PrimaryText
+            ),
+            textAlign = TextAlign.Center,
+            modifier = Modifier.constrainAs(welcomeTitle) {
+                top.linkTo(header.bottom, margin = 32.dp)
+                centerHorizontallyTo(parent)
+            }
+        )
+
+        Text(
+            text = "Sign in to continue your shopping experience",
+            style = MaterialTheme.typography.bodyLarge.copy(
+                fontSize = 16.sp,
+                color = SecondaryText
+            ),
+            textAlign = TextAlign.Center,
+            modifier = Modifier.constrainAs(welcomeSubtitle) {
+                top.linkTo(welcomeTitle.bottom, margin = 8.dp)
+                centerHorizontallyTo(parent)
+                width = Dimension.fillToConstraints
+            }
+        )
+
+        // Social Login Buttons
+        SocialLoginButtons(
+            onGoogleClick = { viewModel.handleEvent(LoginEvent.SignInWithGoogle) },
+            onFacebookClick = { viewModel.handleEvent(LoginEvent.SignInWithFacebook) },
+            onAppleClick = { viewModel.handleEvent(LoginEvent.SignInWithApple) },
+            modifier = Modifier.constrainAs(socialButtons) {
+                top.linkTo(welcomeSubtitle.bottom, margin = 32.dp)
+                centerHorizontallyTo(parent)
+                width = Dimension.fillToConstraints
+            }
+        )
+
+        // Email Input
+        LoginTextField(
+            value = state.email,
+            onValueChange = { viewModel.handleEvent(LoginEvent.EmailChanged(it)) },
+            placeholder = "Email",
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Email,
+                imeAction = ImeAction.Next
+            ),
+            modifier = Modifier.constrainAs(emailField) {
+                top.linkTo(socialButtons.bottom, margin = 24.dp)
+                centerHorizontallyTo(parent)
+                width = Dimension.fillToConstraints
+            }
+        )
+
+        // Password Input
+        LoginTextField(
+            value = state.password,
+            onValueChange = { viewModel.handleEvent(LoginEvent.PasswordChanged(it)) },
+            placeholder = "Password",
+            isPassword = true,
+            showPassword = state.showPassword,
+            onTogglePasswordVisibility = { viewModel.handleEvent(LoginEvent.TogglePasswordVisibility) },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Done
+            ),
+            modifier = Modifier.constrainAs(passwordField) {
+                top.linkTo(emailField.bottom, margin = 16.dp)
+                centerHorizontallyTo(parent)
+                width = Dimension.fillToConstraints
+            }
+        )
+
+        // Forgot Password
+        Text(
+            text = "Forgot Password?",
+            style = MaterialTheme.typography.bodyMedium.copy(
+                fontSize = 14.sp,
+                color = SecondaryText
+            ),
+            modifier = Modifier
+                .constrainAs(forgotPassword) {
+                    top.linkTo(passwordField.bottom, margin = 8.dp)
+                    start.linkTo(parent.start)
+                }
+                .clickable { viewModel.handleEvent(LoginEvent.ForgotPassword) }
+        )
+
+        // Sign In Button
+        PrimaryButton(
+            onClick = { viewModel.handleEvent(LoginEvent.SignIn) },
+            modifier = Modifier.constrainAs(signInButton) {
+                top.linkTo(forgotPassword.bottom, margin = 24.dp)
+                centerHorizontallyTo(parent)
+                width = Dimension.fillToConstraints
+            }
+        ) {
+            if (state.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text(
+                    text = "Sign In",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+            }
         }
+
+        // Sign Up Link
+        Text(
+            text = "Don't have an account? Sign Up",
+            style = MaterialTheme.typography.bodyMedium.copy(
+                fontSize = 14.sp,
+                color = SecondaryText
+            ),
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .constrainAs(signUpLink) {
+                    centerHorizontallyTo(parent)
+                    bottom.linkTo(parent.bottom, margin = 16.dp)
+                }
+                .clickable { onNavigateToSignUp() }
+        )
     }
-    
+
     // Error Message
     state.errorMessage?.let { errorMessage ->
         ErrorDialog(
@@ -215,22 +243,23 @@ fun LoginScreen(
 private fun SocialLoginButtons(
     onGoogleClick: () -> Unit,
     onFacebookClick: () -> Unit,
-    onAppleClick: () -> Unit
+    onAppleClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         SocialLoginButton(
             text = "Continue with Google",
             onClick = onGoogleClick
         )
-        
+
         SocialLoginButton(
             text = "Continue with Facebook",
             onClick = onFacebookClick
         )
-        
+
         SocialLoginButton(
             text = "Continue with Apple",
             onClick = onAppleClick
