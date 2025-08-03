@@ -24,32 +24,20 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mmaquera.happybabystyle.R
+import com.mmaquera.happybabystyle.ui.theme.BorderLight
+import com.mmaquera.happybabystyle.ui.theme.HappyBabyStyleTheme
+import com.mmaquera.happybabystyle.ui.theme.PrimaryText
+import com.mmaquera.happybabystyle.ui.theme.Secondary
+import com.mmaquera.happybabystyle.ui.theme.SurfaceBackground
 
-/**
- * Welcome Screen composable following the exact Figma design specifications
- * Refactored to use ConstraintLayout Compose for precise positioning
- *
- * Design Details from Figma:
- * - Background image covers full screen and centered
- * - Buttons positioned at bottom with specific spacing using constraints
- * - Login button: #fabac2 (pink) background
- * - Sign Up button: #f5f0f0 (gray) background
- * - 12dp gap between buttons (defined as constraint margin)
- * - 16dp horizontal padding, 12dp vertical padding
- * - 24dp border radius (rounded-3xl)
- * - Plus Jakarta Sans Bold, 16px, #171212 color
- *
- * Architecture:
- * - Uses ConstraintLayout Compose for better performance and precise positioning
- * - Eliminates nested Box layouts for cleaner composition
- * - Maintains Figma design specifications with constraint-based positioning
- */
+
 @Composable
 fun WelcomeScreen(
     modifier: Modifier = Modifier,
@@ -124,7 +112,7 @@ fun BackgroundImageSection(
         modifier = modifier
     ) {
         val logo = createRef()
-        
+
         // Logo positioned at center of the available space
         Image(
             painter = painterResource(id = R.drawable.ic_logo),
@@ -156,7 +144,7 @@ fun ActionButtonsSection(
             .padding(horizontal = 16.dp, vertical = 12.dp) // px-4 py-3 from Figma
     ) {
         val (loginButton, signUpButton) = createRefs()
-        
+
         // Login Button - exact Figma specifications
         FigmaLoginButton(
             onClick = onLoginClick,
@@ -202,10 +190,10 @@ fun FigmaLoginButton(
             .height(48.dp) // h-12 from Figma
             .clip(RoundedCornerShape(24.dp)), // rounded-3xl from Figma
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFFFABAC2), // #fabac2 from Figma
-            contentColor = Color(0xFF171212), // #171212 from Figma
-            disabledContainerColor = Color(0xFFE5DBDB),
-            disabledContentColor = Color(0xFF8A6163)
+            containerColor = Secondary, // #fabac2 from Figma (ver Color.kt)
+            contentColor = PrimaryText, // #171212 from Figma (ver Color.kt)
+            disabledContainerColor = BorderLight, // #e5dbdb (ver Color.kt)
+            disabledContentColor = Secondary // #8a6163 (ver Color.kt)
         ),
         shape = RoundedCornerShape(24.dp),
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 0.dp) // px-5 py-0 from Figma
@@ -262,3 +250,14 @@ fun FigmaSignUpButton(
     }
 }
 
+@Composable
+@Preview(
+    name = "WelcomeScreen Light",
+    showBackground = true,
+    uiMode = android.content.res.Configuration.UI_MODE_NIGHT_NO
+)
+fun PreviewWelcomeScreenLight() {
+    HappyBabyStyleTheme(darkTheme = false) {
+        WelcomeScreen()
+    }
+}
