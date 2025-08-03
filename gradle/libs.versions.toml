@@ -14,6 +14,7 @@ coroutines = "1.7.3"
 materialIcons = "1.5.4"
 coil = "2.5.0"
 navigation = "2.9.3"
+constraintLayoutCompose = "1.0.1"
 archCoreTesting = "2.2.0"
 mockk = "1.13.8"
 
@@ -50,6 +51,9 @@ coil-kt-coil-compose = { group = "io.coil-kt", name = "coil-compose", version.re
 
 # Navigation
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
+
+# ConstraintLayout
+androidx-constraintlayout-compose = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "constraintLayoutCompose" }
 
 # Testing
 androidx-arch-core-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "archCoreTesting" }
