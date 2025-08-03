@@ -17,6 +17,8 @@ navigation = "2.9.3"
 constraintLayoutCompose = "1.0.1"
 archCoreTesting = "2.2.0"
 mockk = "1.13.8"
+googleServices = "4.4.1"
+firebaseBom = "33.5.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -55,6 +57,10 @@ androidx-navigation-compose = { group = "androidx.navigation", name = "navigatio
 # ConstraintLayout
 androidx-constraintlayout-compose = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "constraintLayoutCompose" }
 
+# Firebase
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
+
 # Testing
 androidx-arch-core-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "archCoreTesting" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
@@ -64,3 +70,4 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
