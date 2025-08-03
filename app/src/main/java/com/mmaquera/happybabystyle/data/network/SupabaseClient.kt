@@ -37,10 +37,16 @@ class SupabaseClient() {
             })
         }
         
-        // Configurar logging para debugging
+        // Configurar logging para APIs HTTP
         install(Logging) {
             logger = Logger.ANDROID
-            level = LogLevel.BODY
+            level = LogLevel.INFO
+            filter { request ->
+                // Log solo requests a Supabase
+                request.url.host.contains("supabase") || 
+                request.url.toString().contains("auth") ||
+                request.url.toString().contains("rest")
+            }
         }
     }
     

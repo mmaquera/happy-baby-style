@@ -36,7 +36,7 @@ object ServiceProvider {
     
     /**
      * Crea AuthRepository siguiendo Clean Architecture
-     * Temporal hasta que se habilite Hilt
+     * Usa AuthRepositoryImpl con ModernAuthService
      */
     fun getAuthRepository(context: Context): AuthRepository {
         return AuthRepositoryImpl(

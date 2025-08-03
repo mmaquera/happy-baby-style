@@ -329,7 +329,7 @@ class ModernAuthService(
                 "email" to email,
                 "password" to password
             )
-
+            
             val response = supabaseClient.httpClient.post("${supabaseClient.getBaseUrl()}/auth/v1/token?grant_type=password") {
                 contentType(ContentType.Application.Json)
                 header("apikey", supabaseClient.getAnonKey())
@@ -354,13 +354,24 @@ class ModernAuthService(
                     errorBody.contains("invalid_credentials") -> "Credenciales incorrectas"
                     errorBody.contains("email_not_confirmed") -> "Debes verificar tu email antes de iniciar sesión"
                     errorBody.contains("too_many_requests") -> "Demasiados intentos. Intenta más tarde"
+                    errorBody.contains("unexpected_failure") -> "Error de configuración del servidor. Contacta al administrador"
+                    errorBody.contains("bad_jwt") -> "Error de autenticación del servidor"
+                    response.status.value == 500 -> "Error interno del servidor. Intenta más tarde"
                     else -> "Error de autenticación: $errorBody"
                 }
                 AuthResult.Error(errorMessage)
             }
 
         } catch (e: Exception) {
-            AuthResult.Error("Error de conexión: ${e.message}", e)
+            
+            val errorMessage = when {
+                e.message?.contains("timeout") == true -> "Tiempo de espera agotado. Verifica tu conexión"
+                e.message?.contains("network") == true -> "Error de red. Verifica tu conexión"
+                e.message?.contains("ssl") == true -> "Error de seguridad SSL"
+                else -> "Error de conexión: ${e.message}"
+            }
+            
+            AuthResult.Error(errorMessage, e)
         }
     }
     

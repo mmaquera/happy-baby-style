@@ -61,12 +61,37 @@ sealed class AuthException(message: String, cause: Throwable? = null) : Exceptio
     /**
      * Error de red
      */
-    class NetworkError(message: String = "Error de conexión") : AuthException(message)
+    class NetworkError(message: String = "Error de conexión", cause: Throwable? = null) : AuthException(message, cause)
     
     /**
      * Error del servidor
      */
-    class ServerError(message: String = "Error del servidor") : AuthException(message)
+    class ServerError(message: String = "Error del servidor", cause: Throwable? = null) : AuthException(message, cause)
+    
+    /**
+     * Email ya está en uso
+     */
+    class EmailAlreadyInUse(message: String = "Este email ya está registrado") : AuthException(message)
+    
+    /**
+     * Contraseña muy débil
+     */
+    class WeakPassword(message: String = "La contraseña es muy débil") : AuthException(message)
+    
+    /**
+     * Registro deshabilitado
+     */
+    class SignupDisabled(message: String = "El registro está deshabilitado") : AuthException(message)
+    
+    /**
+     * Límite de intentos excedido
+     */
+    class RateLimitExceeded(message: String = "Demasiados intentos, espera un momento") : AuthException(message)
+    
+    /**
+     * Operación no soportada
+     */
+    class UnsupportedOperation(message: String = "Operación no soportada") : AuthException(message)
     
     /**
      * Error de configuración

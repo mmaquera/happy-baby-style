@@ -245,6 +245,11 @@ class LoginViewModel(
             is AuthException.NetworkError -> exception.message ?: "Error de conexión"
             is AuthException.ServerError -> exception.message ?: "Error del servidor"
             is AuthException.ConfigurationError -> exception.message ?: "Error de configuración"
+            is AuthException.EmailAlreadyInUse -> exception.message ?: "Email ya está en uso"
+            is AuthException.WeakPassword -> exception.message ?: "Contraseña muy débil"
+            is AuthException.SignupDisabled -> exception.message ?: "Registro deshabilitado"
+            is AuthException.RateLimitExceeded -> exception.message ?: "Demasiados intentos"
+            is AuthException.UnsupportedOperation -> exception.message ?: "Operación no soportada"
             is AuthException.UnknownError -> exception.message ?: "Error desconocido"
         }
     }

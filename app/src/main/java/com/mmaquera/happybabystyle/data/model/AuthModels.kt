@@ -86,27 +86,29 @@ data class AppMetadata(
 @Serializable
 data class UserMetadata(
     @SerialName("avatar_url")
-    val avatarUrl: String?,
+    val avatarUrl: String? = null,
     @SerialName("email")
-    val email: String?,
+    val email: String? = null,
     @SerialName("email_verified")
-    val emailVerified: Boolean?,
+    val emailVerified: Boolean? = null,
+    @SerialName("phone_verified")
+    val phoneVerified: Boolean? = null,
     @SerialName("full_name")
-    val fullName: String?,
+    val fullName: String? = null,
     @SerialName("given_name")
-    val givenName: String?,
+    val givenName: String? = null,
     @SerialName("family_name")
-    val familyName: String?,
+    val familyName: String? = null,
     @SerialName("iss")
-    val iss: String?,
+    val iss: String? = null,
     @SerialName("name")
-    val name: String?,
+    val name: String? = null,
     @SerialName("picture")
-    val picture: String?,
+    val picture: String? = null,
     @SerialName("provider_id")
-    val providerId: String?,
+    val providerId: String? = null,
     @SerialName("sub")
-    val sub: String?
+    val sub: String? = null
 )
 
 @Serializable
