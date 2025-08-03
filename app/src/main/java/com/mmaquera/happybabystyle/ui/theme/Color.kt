@@ -18,7 +18,7 @@ val BorderSelection = Color(0xFFE5E8EB)
 // Semantic Colors
 val Primary = Color(0xFF171212)
 val OnPrimary = Color(0xFFFFFFFF)
-val Secondary = Color(0xFF8A6163)
+val Secondary = Color(0xFFFABAC2)
 val OnSecondary = Color(0xFFFFFFFF)
 
 // Surface Colors
