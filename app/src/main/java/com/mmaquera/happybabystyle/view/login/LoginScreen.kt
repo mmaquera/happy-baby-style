@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -43,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mmaquera.happybabystyle.R
 import com.mmaquera.happybabystyle.ui.theme.BabyStyleText
 import com.mmaquera.happybabystyle.ui.theme.HappyBabyStyleTheme
 import com.mmaquera.happybabystyle.ui.theme.PrimaryText
@@ -85,7 +87,7 @@ fun LoginScreen(
 
         // Header
         BabyStyleText(
-            text = "Happy Baby Style",
+            text = stringResource(id = R.string.happy_baby_style),
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
@@ -98,7 +100,7 @@ fun LoginScreen(
 
         // Welcome Text
         Text(
-            text = "Welcome Back",
+            text = stringResource(id = R.string.welcome_back),
             style = MaterialTheme.typography.headlineLarge.copy(
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
@@ -112,7 +114,7 @@ fun LoginScreen(
         )
 
         Text(
-            text = "Sign in to continue your shopping experience",
+            text = stringResource(id = R.string.sign_in_to_continue_shopping),
             style = MaterialTheme.typography.bodyLarge.copy(
                 fontSize = 16.sp,
                 color = SecondaryText
@@ -141,7 +143,7 @@ fun LoginScreen(
         LoginTextField(
             value = state.email,
             onValueChange = { viewModel.handleEvent(LoginEvent.EmailChanged(it)) },
-            placeholder = "Email",
+            placeholder = "Correo electrónico",
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Email,
                 imeAction = ImeAction.Next
@@ -157,7 +159,7 @@ fun LoginScreen(
         LoginTextField(
             value = state.password,
             onValueChange = { viewModel.handleEvent(LoginEvent.PasswordChanged(it)) },
-            placeholder = "Password",
+            placeholder = "Contraseña",
             isPassword = true,
             showPassword = state.showPassword,
             onTogglePasswordVisibility = { viewModel.handleEvent(LoginEvent.TogglePasswordVisibility) },
@@ -174,7 +176,7 @@ fun LoginScreen(
 
         // Forgot Password
         Text(
-            text = "Forgot Password?",
+            text = stringResource(id = R.string.forgot_password),
             style = MaterialTheme.typography.bodyMedium.copy(
                 fontSize = 14.sp,
                 color = SecondaryText
@@ -204,7 +206,7 @@ fun LoginScreen(
                 )
             } else {
                 Text(
-                    text = "Sign In",
+                    text = stringResource(id = R.string.sign_in_button_text),
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
@@ -215,7 +217,7 @@ fun LoginScreen(
 
         // Sign Up Link
         Text(
-            text = "Don't have an account? Sign Up",
+            text = stringResource(id = R.string.dont_have_account_sign_up),
             style = MaterialTheme.typography.bodyMedium.copy(
                 fontSize = 14.sp,
                 color = SecondaryText
@@ -251,17 +253,17 @@ private fun SocialLoginButtons(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         SocialLoginButton(
-            text = "Continue with Google",
+            text = stringResource(id = R.string.continue_with_google),
             onClick = onGoogleClick
         )
 
         SocialLoginButton(
-            text = "Continue with Facebook",
+            text = stringResource(id = R.string.continue_with_facebook),
             onClick = onFacebookClick
         )
 
         SocialLoginButton(
-            text = "Continue with Apple",
+            text = stringResource(id = R.string.continue_with_apple),
             onClick = onAppleClick
         )
     }

@@ -2,4 +2,16 @@
     <string name="app_name">Happy baby style</string>
     <string name="log_in_button_text">Ingresar</string>
     <string name="sign_up_button_text">Registro</string>
+    <string name="happy_baby_style">Happy Baby Style</string>
+    <string name="welcome_back">Bienvenido de nuevo</string>
+    <string name="sign_in_to_continue">Inicia sesión para continuar</string>
+    <string name="dont_have_account_sign_up">¿No tienes una cuenta? Regístrate</string>
+    <string name="sign_in_to_continue_shopping">Inicia sesión para continuar con tu experiencia de compra</string>
+    <string name="continue_with_google">Continuar con Google</string>
+    <string name="continue_with_facebook">Continuar con Facebook</string>
+    <string name="continue_with_apple">Continuar con Apple</string>
+    <string name="email_placeholder">Correo electrónico</string>
+    <string name="password_placeholder">Contraseña</string>
+    <string name="forgot_password">¿Olvidaste tu contraseña?</string>
+    <string name="sign_in_button_text">Iniciar sesión</string>
 </resources>
