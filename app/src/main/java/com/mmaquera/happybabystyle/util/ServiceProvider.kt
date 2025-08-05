@@ -8,6 +8,7 @@ import com.mmaquera.happybabystyle.domain.repository.AuthRepository
 import com.mmaquera.happybabystyle.domain.usecase.LoginWithEmailUseCase
 import com.mmaquera.happybabystyle.domain.usecase.LoginWithGoogleUseCase
 import com.mmaquera.happybabystyle.domain.usecase.ValidateCredentialsUseCase
+import com.mmaquera.happybabystyle.domain.usecase.SignUpUseCase
 
 /**
  * Proveedor temporal de servicios hasta que se resuelva Hilt
@@ -67,6 +68,15 @@ object ServiceProvider {
      */
     fun getValidateCredentialsUseCase(context: Context): ValidateCredentialsUseCase {
         return ValidateCredentialsUseCase(
+            authRepository = getAuthRepository(context)
+        )
+    }
+    
+    /**
+     * Crea SignUpUseCase con sus dependencias
+     */
+    fun getSignUpUseCase(context: Context): SignUpUseCase {
+        return SignUpUseCase(
             authRepository = getAuthRepository(context)
         )
     }

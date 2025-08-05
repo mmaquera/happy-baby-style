@@ -2,7 +2,7 @@ package com.mmaquera.happybabystyle.data.repository
 
 import android.util.Patterns
 import com.mmaquera.happybabystyle.data.mapper.AuthMapper
-import com.mmaquera.happybabystyle.data.mapper.ServiceMapper
+
 import com.mmaquera.happybabystyle.data.service.ModernAuthService
 import com.mmaquera.happybabystyle.domain.model.AuthResult
 import com.mmaquera.happybabystyle.domain.model.LoginCredentials
@@ -44,15 +44,12 @@ class AuthRepositoryImpl(
                 }
             }
             
-            // Mapear resultado del servicio a dominio
-            val domainResult = ServiceMapper.mapToDomainAuthResult(serviceResult)
-            
             // Actualizar estado de autenticación si es exitoso
-            if (domainResult is AuthResult.Success) {
-                _authState.value = domainResult.user
+            if (serviceResult is AuthResult.Success) {
+                _authState.value = serviceResult.user
             }
             
-            emit(domainResult)
+            emit(serviceResult)
             
         } catch (exception: Exception) {
             val authException = AuthMapper.mapToAuthException(exception)
@@ -156,5 +153,35 @@ class AuthRepositoryImpl(
         return password.isNotBlank() && 
                password.length >= 6 && // Mínimo 6 caracteres
                password.length <= 128 // Máximo razonable
+    }
+    
+    override suspend fun register(name: String, email: String, password: String): Flow<AuthResult> = flow {
+        emit(AuthResult.Loading)
+        
+        try {
+            val serviceResult = modernAuthService.signUpWithEmail(name, email, password)
+            
+            // El servicio ya devuelve AuthResult de dominio, así que simplemente emitimos
+            when (serviceResult) {
+                is AuthResult.Success -> {
+                    _authState.value = serviceResult.user
+                    emit(serviceResult)
+                }
+                is AuthResult.Error -> {
+                    emit(serviceResult)
+                }
+                is AuthResult.Loading -> {
+                    emit(serviceResult)
+                }
+                else -> {
+                    // Caso no esperado
+                    emit(AuthResult.Error(AuthMapper.mapToAuthException(RuntimeException("Estado inesperado"))))
+                }
+            }
+            
+        } catch (exception: Exception) {
+            val authException = AuthMapper.mapToAuthException(exception)
+            emit(AuthResult.Error(authException))
+        }
     }
 }

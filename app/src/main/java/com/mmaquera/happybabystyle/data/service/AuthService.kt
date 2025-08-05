@@ -8,7 +8,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
 import com.mmaquera.happybabystyle.data.model.*
+import com.mmaquera.happybabystyle.data.mapper.AuthMapper
 import com.mmaquera.happybabystyle.data.network.SupabaseClient
+import com.mmaquera.happybabystyle.domain.model.AuthResult
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -18,14 +20,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import com.mmaquera.happybabystyle.data.config.AppConfig
 
-/**
- * Resultado de autenticación
- */
-sealed class AuthResult {
-    data class Success(val user: SupabaseUser, val profile: UserProfile?) : AuthResult()
-    data class Error(val message: String, val exception: Throwable? = null) : AuthResult()
-    object Loading : AuthResult()
-}
+
 
 @Singleton
 class AuthService @Inject constructor(
@@ -69,10 +64,10 @@ class AuthService @Inject constructor(
             if (idToken != null) {
                 authenticateWithSupabase(idToken, account)
             } else {
-                AuthResult.Error("No se pudo obtener el token de Google")
+                AuthResult.Error(AuthMapper.mapToAuthException(RuntimeException("No se pudo obtener el token de Google")))
             }
         } catch (e: ApiException) {
-            AuthResult.Error("Error en Google Sign-In: ${e.message}", e)
+            AuthResult.Error(AuthMapper.mapToAuthException(e))
         }
     }
     
@@ -109,14 +104,18 @@ class AuthService @Inject constructor(
                 val profile = getOrCreateUserProfile(authResponse.user, googleAccount)
                 currentProfile = profile
                 
-                AuthResult.Success(authResponse.user, profile)
+                AuthResult.Success(
+                    user = AuthMapper.mapToUser(authResponse.user, profile),
+                    accessToken = authResponse.accessToken,
+                    refreshToken = authResponse.refreshToken
+                )
             } else {
                 val errorBody = response.bodyAsText()
-                AuthResult.Error("Error de autenticación: $errorBody")
+                AuthResult.Error(AuthMapper.mapToAuthException(RuntimeException("Error de autenticación: $errorBody")))
             }
             
         } catch (e: Exception) {
-            AuthResult.Error("Error al autenticar con Supabase: ${e.message}", e)
+            AuthResult.Error(AuthMapper.mapToAuthException(e))
         }
     }
     

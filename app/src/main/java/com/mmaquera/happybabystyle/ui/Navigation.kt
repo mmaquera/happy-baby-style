@@ -6,6 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.mmaquera.happybabystyle.view.home.HomeScreen
 import com.mmaquera.happybabystyle.view.login.LoginScreen
+import com.mmaquera.happybabystyle.view.signup.SignUpScreen
 import com.mmaquera.happybabystyle.view.welcome.WelcomeScreen
 
 @Composable
@@ -19,6 +20,9 @@ fun Navigation() {
             WelcomeScreen(
                 onLoginClick = {
                     navController.navigate(LoginScreen)
+                },
+                onSignUpClick = {
+                    navController.navigate(SignUpScreen)
                 }
             )
         }
@@ -31,6 +35,23 @@ fun Navigation() {
         }
         composable<HomeScreen> {
             HomeScreen()
+        }
+        composable<SignUpScreen> {
+            SignUpScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToLogin = {
+                    navController.navigate(LoginScreen)
+                },
+                onSignUpSuccess = {
+                    navController.navigate(LoginScreen){
+                        popUpTo(SignUpScreen){
+                            inclusive = true
+                        }
+                    }
+                }
+            )
         }
     }
 }

@@ -69,4 +69,13 @@ interface AuthRepository {
      * @return Boolean true si cumple los requisitos
      */
     fun isValidPassword(password: String): Boolean
+    
+    /**
+     * Registra un nuevo usuario
+     * @param name Nombre del usuario
+     * @param email Email del usuario
+     * @param password Contraseña del usuario
+     * @return Flow<AuthResult> Resultado del registro
+     */
+    suspend fun register(name: String, email: String, password: String): Flow<AuthResult>
 }

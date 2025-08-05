@@ -57,18 +57,18 @@ object AuthMapper {
      */
     fun mapToUser(supabaseUser: SupabaseUser, profile: UserProfile? = null): User {
         val provider = when {
-            supabaseUser.appMetadata.provider == "google" -> AuthProvider.GOOGLE
-            supabaseUser.appMetadata.provider == "facebook" -> AuthProvider.FACEBOOK
-            supabaseUser.appMetadata.provider == "apple" -> AuthProvider.APPLE
+            supabaseUser.appMetadata?.provider == "google" -> AuthProvider.GOOGLE
+            supabaseUser.appMetadata?.provider == "facebook" -> AuthProvider.FACEBOOK
+            supabaseUser.appMetadata?.provider == "apple" -> AuthProvider.APPLE
             else -> AuthProvider.EMAIL
         }
         
         return User(
             id = supabaseUser.id,
             email = supabaseUser.email,
-            firstName = profile?.firstName ?: supabaseUser.userMetadata.givenName,
-            lastName = profile?.lastName ?: supabaseUser.userMetadata.familyName,
-            avatarUrl = profile?.avatarUrl ?: supabaseUser.userMetadata.avatarUrl ?: supabaseUser.userMetadata.picture,
+            firstName = profile?.firstName ?: supabaseUser.userMetadata?.givenName,
+            lastName = profile?.lastName ?: supabaseUser.userMetadata?.familyName,
+            avatarUrl = profile?.avatarUrl ?: supabaseUser.userMetadata?.avatarUrl ?: supabaseUser.userMetadata?.picture,
             provider = provider,
             isEmailVerified = supabaseUser.emailConfirmedAt != null,
             phone = profile?.phone ?: supabaseUser.phone,

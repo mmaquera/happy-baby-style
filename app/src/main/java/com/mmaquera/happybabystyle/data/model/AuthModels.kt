@@ -20,6 +20,24 @@ data class SupabaseAuthRequest(
 )
 
 @Serializable
+data class SignUpRequestData(
+    @SerialName("full_name")
+    val fullName: String,
+    @SerialName("name")
+    val name: String
+)
+
+@Serializable
+data class SignUpRequest(
+    @SerialName("email")
+    val email: String,
+    @SerialName("password")
+    val password: String,
+    @SerialName("data")
+    val data: SignUpRequestData
+)
+
+@Serializable
 data class AuthOptions(
     @SerialName("redirect_to")
     val redirectTo: String? = null,
@@ -56,23 +74,27 @@ data class SupabaseUser(
     @SerialName("email")
     val email: String,
     @SerialName("email_confirmed_at")
-    val emailConfirmedAt: String?,
+    val emailConfirmedAt: String? = null,
     @SerialName("phone")
-    val phone: String?,
+    val phone: String? = null,
     @SerialName("confirmed_at")
-    val confirmedAt: String?,
+    val confirmedAt: String? = null,
+    @SerialName("confirmation_sent_at")
+    val confirmationSentAt: String? = null,
     @SerialName("last_sign_in_at")
-    val lastSignInAt: String?,
+    val lastSignInAt: String? = null,
     @SerialName("app_metadata")
-    val appMetadata: AppMetadata,
+    val appMetadata: AppMetadata? = null,
     @SerialName("user_metadata")
-    val userMetadata: UserMetadata,
+    val userMetadata: UserMetadata? = null,
     @SerialName("identities")
-    val identities: List<Identity>?,
+    val identities: List<Identity>? = null,
     @SerialName("created_at")
     val createdAt: String,
     @SerialName("updated_at")
-    val updatedAt: String
+    val updatedAt: String,
+    @SerialName("is_anonymous")
+    val isAnonymous: Boolean? = null
 )
 
 @Serializable
@@ -113,12 +135,14 @@ data class UserMetadata(
 
 @Serializable
 data class Identity(
+    @SerialName("identity_id")
+    val identityId: String,
     @SerialName("id")
     val id: String,
     @SerialName("user_id")
     val userId: String,
     @SerialName("identity_data")
-    val identityData: UserMetadata,
+    val identityData: UserMetadata? = null,
     @SerialName("provider")
     val provider: String,
     @SerialName("last_sign_in_at")
@@ -126,7 +150,9 @@ data class Identity(
     @SerialName("created_at")
     val createdAt: String,
     @SerialName("updated_at")
-    val updatedAt: String
+    val updatedAt: String,
+    @SerialName("email")
+    val email: String? = null
 )
 
 /**

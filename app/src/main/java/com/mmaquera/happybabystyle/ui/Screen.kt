@@ -26,3 +26,6 @@ object OrderDetailScreen
 object ProfileScreen
 
 object SummaryScreen
+
+@Serializable
+object SignUpScreen

@@ -11,7 +11,9 @@ import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.mmaquera.happybabystyle.data.config.AppConfig
 import com.mmaquera.happybabystyle.data.model.*
+import com.mmaquera.happybabystyle.data.mapper.AuthMapper
 import com.mmaquera.happybabystyle.data.network.SupabaseClient
+import com.mmaquera.happybabystyle.domain.model.AuthResult
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -59,8 +61,10 @@ class ModernAuthService(
             val activityContext = getActivityContext()
             if (activityContext == null) {
                 return AuthResult.Error(
-                    "Se necesita Activity context para mostrar UI de credenciales. " +
-                    "Context actual: ${context::class.simpleName}"
+                    AuthMapper.mapToAuthException(RuntimeException(
+                        "Se necesita Activity context para mostrar UI de credenciales. " +
+                        "Context actual: ${context::class.simpleName}"
+                    ))
                 )
             }
 
@@ -73,7 +77,7 @@ class ModernAuthService(
                     .isGooglePlayServicesAvailable(activityContext)
                 if (availabilityResult != com.google.android.gms.common.ConnectionResult.SUCCESS) {
                     println("❌ GoogleAuth: Google Play Services no disponible: $availabilityResult")
-                    return AuthResult.Error("Google Play Services no está disponible")
+                    return AuthResult.Error(AuthMapper.mapToAuthException(RuntimeException("Google Play Services no está disponible")))
                 }
                 println("✅ GoogleAuth: Google Play Services disponible")
             } catch (e: Exception) {
@@ -132,10 +136,10 @@ class ModernAuthService(
                     println("🔍 Error tipo: ${e.type}")
                 }
             }
-            AuthResult.Error("Error al obtener credenciales: ${e.message} (Tipo: ${e::class.simpleName})", e)
+            AuthResult.Error(AuthMapper.mapToAuthException(e))
         } catch (e: Exception) {
             println("❌ GoogleAuth Error inesperado: ${e.message}")
-            AuthResult.Error("Error inesperado: ${e.message}", e)
+            AuthResult.Error(AuthMapper.mapToAuthException(e))
         }
     }
 
@@ -153,11 +157,11 @@ class ModernAuthService(
                     exchangeTokenWithSupabase(idToken)
                 }
                 else -> {
-                    AuthResult.Error("Tipo de credencial no soportado")
+                    AuthResult.Error(AuthMapper.mapToAuthException(RuntimeException("Tipo de credencial no soportado")))
                 }
             }
         } catch (e: Exception) {
-            AuthResult.Error("Error procesando credenciales: ${e.message}", e)
+            AuthResult.Error(AuthMapper.mapToAuthException(e))
         }
     }
 
@@ -188,14 +192,18 @@ class ModernAuthService(
                 val profile = getOrCreateUserProfile(authResponse.user)
                 currentProfile = profile
 
-                AuthResult.Success(authResponse.user, profile)
+                AuthResult.Success(
+                    user = AuthMapper.mapToUser(authResponse.user, profile),
+                    accessToken = authResponse.accessToken,
+                    refreshToken = authResponse.refreshToken
+                )
             } else {
                 val errorBody = response.bodyAsText()
-                AuthResult.Error("Error de autenticación: $errorBody")
+                AuthResult.Error(AuthMapper.mapToAuthException(RuntimeException("Error de autenticación: $errorBody")))
             }
 
         } catch (e: Exception) {
-            AuthResult.Error("Error intercambiando token: ${e.message}", e)
+            AuthResult.Error(AuthMapper.mapToAuthException(e))
         }
     }
 
@@ -248,9 +256,9 @@ class ModernAuthService(
         return try {
             val profileRequest = CreateUserProfileRequest(
                 userId = user.id,
-                firstName = user.userMetadata.givenName ?: user.userMetadata.name?.split(" ")?.firstOrNull(),
-                lastName = user.userMetadata.familyName ?: user.userMetadata.name?.split(" ")?.drop(1)?.joinToString(" "),
-                avatarUrl = user.userMetadata.avatarUrl ?: user.userMetadata.picture
+                firstName = user.userMetadata?.givenName ?: user.userMetadata?.name?.split(" ")?.firstOrNull(),
+                lastName = user.userMetadata?.familyName ?: user.userMetadata?.name?.split(" ")?.drop(1)?.joinToString(" "),
+                avatarUrl = user.userMetadata?.avatarUrl ?: user.userMetadata?.picture
             )
 
             val response = supabaseClient.httpClient.post("${supabaseClient.getBaseUrl()}/rest/v1/user_profiles") {
@@ -282,26 +290,23 @@ class ModernAuthService(
 
             // TODO: Revocar token en Supabase si es necesario
             
+            // Para logout, crear un usuario del dominio vacío
+            val emptyDomainUser = com.mmaquera.happybabystyle.domain.model.User(
+                id = "",
+                email = "",
+                firstName = "",
+                lastName = "",
+                avatarUrl = null,
+                provider = com.mmaquera.happybabystyle.domain.model.AuthProvider.EMAIL
+            )
+            
             AuthResult.Success(
-                user = SupabaseUser(
-                    id = "",
-                    aud = "",
-                    role = "",
-                    email = "",
-                    emailConfirmedAt = null,
-                    phone = null,
-                    confirmedAt = null,
-                    lastSignInAt = null,
-                    appMetadata = AppMetadata("", listOf()),
-                    userMetadata = UserMetadata(null, null, null, null, null, null, null, null, null, null, null),
-                    identities = null,
-                    createdAt = "",
-                    updatedAt = ""
-                ),
-                profile = null
+                user = emptyDomainUser,
+                accessToken = "",
+                refreshToken = null
             )
         } catch (e: Exception) {
-            AuthResult.Error("Error cerrando sesión: ${e.message}", e)
+            AuthResult.Error(AuthMapper.mapToAuthException(e))
         }
     }
 
@@ -347,7 +352,11 @@ class ModernAuthService(
                 val profile = getOrCreateUserProfile(authResponse.user)
                 currentProfile = profile
 
-                AuthResult.Success(authResponse.user, profile)
+                AuthResult.Success(
+                    user = AuthMapper.mapToUser(authResponse.user, profile),
+                    accessToken = authResponse.accessToken,
+                    refreshToken = authResponse.refreshToken
+                )
             } else {
                 val errorBody = response.bodyAsText()
                 val errorMessage = when {
@@ -359,7 +368,7 @@ class ModernAuthService(
                     response.status.value == 500 -> "Error interno del servidor. Intenta más tarde"
                     else -> "Error de autenticación: $errorBody"
                 }
-                AuthResult.Error(errorMessage)
+                AuthResult.Error(AuthMapper.mapToAuthException(RuntimeException(errorMessage)))
             }
 
         } catch (e: Exception) {
@@ -371,7 +380,7 @@ class ModernAuthService(
                 else -> "Error de conexión: ${e.message}"
             }
             
-            AuthResult.Error(errorMessage, e)
+            AuthResult.Error(AuthMapper.mapToAuthException(e))
         }
     }
     
@@ -427,6 +436,132 @@ class ModernAuthService(
         currentProfile = mockProfile
         
         println("🎭 Usuario mock creado: ${mockUser.email}")
-        return AuthResult.Success(mockUser, mockProfile)
+        return AuthResult.Success(
+            user = AuthMapper.mapToUser(mockUser, mockProfile),
+            accessToken = "mock_access_token",
+            refreshToken = "mock_refresh_token"
+        )
+    }
+
+    /**
+     * Registra un nuevo usuario con email y contraseña usando Supabase Auth
+     */
+    suspend fun signUpWithEmail(name: String, email: String, password: String): AuthResult {
+        return try {
+            val signupRequest = SignUpRequest(
+                email = email,
+                password = password,
+                data = SignUpRequestData(
+                    fullName = name,
+                    name = name
+                )
+            )
+
+            println("🔍 SignUp Request - Name: '$name', Email: '$email', Password length: ${password.length}")
+            println("🔍 SignUpRequest object: $signupRequest")
+
+            val response = supabaseClient.httpClient.post("${supabaseClient.getBaseUrl()}/auth/v1/signup") {
+                contentType(ContentType.Application.Json)
+                header("apikey", supabaseClient.getAnonKey())
+                setBody(signupRequest)
+            }
+
+            println("🔍 SignUp Response Status: ${response.status}")
+            if (response.status.isSuccess()) {
+                val responseBody = response.bodyAsText()
+                println("🔍 SignUp Success Response Body: $responseBody")
+
+                try {
+                    // El signup devuelve directamente el usuario, no tokens
+                    val user = kotlinx.serialization.json.Json.decodeFromString<SupabaseUser>(responseBody)
+                    println("🔍 SignUp Success: User ID = ${user.id}")
+
+                    // Confirmar email automáticamente para desarrollo
+                    println("🔄 Iniciando confirmación automática de email...")
+                    val confirmResponse = confirmUserEmail(user.id)
+                    println("🔄 Resultado confirmación: $confirmResponse")
+                    
+                    if (confirmResponse) {
+                        println("✅ Email confirmado automáticamente para: ${user.email}")
+                        
+                        // Ahora hacer login para obtener tokens
+                        println("🔄 Iniciando login automático después de confirmar email...")
+                        val loginResult = signInWithEmail(email, password)
+                        if (loginResult is AuthResult.Success) {
+                            println("✅ Login automático exitoso después de confirmar email")
+                            currentUser = user
+                            // El perfil ya está incluido en el usuario del dominio
+                            return loginResult
+                        } else {
+                            println("⚠️ Login automático falló después de confirmar email: $loginResult")
+                        }
+                    } else {
+                        println("⚠️ No se pudo confirmar email automáticamente")
+                    }
+
+                    // Si no se pudo hacer login automático, devolver usuario sin tokens
+                    currentUser = user
+                    val profile = getOrCreateUserProfile(user)
+                    currentProfile = profile
+
+                    AuthResult.Success(
+                        user = AuthMapper.mapToUser(user, profile),
+                        accessToken = "", // Sin tokens hasta confirmación manual
+                        refreshToken = null
+                    )
+                } catch (e: Exception) {
+                    println("🚨 SignUp Deserialization Error: ${e.message}")
+                    AuthResult.Error(AuthMapper.mapToAuthException(RuntimeException("Error procesando respuesta del servidor: ${e.message}")))
+                }
+            } else {
+                val responseBody = response.bodyAsText()
+                println("🚨 SignUp Error - Status: ${response.status}, Body: $responseBody")
+                AuthResult.Error(AuthMapper.mapToAuthException(RuntimeException("Error en registro: $responseBody")))
+            }
+
+        } catch (e: Exception) {
+            println("🚨 SignUp Exception: ${e.message}")
+            AuthResult.Error(AuthMapper.mapToAuthException(e))
+        }
+    }
+
+    /**
+     * Confirma el email de un usuario automáticamente (para desarrollo)
+     */
+    private suspend fun confirmUserEmail(userId: String): Boolean {
+        return try {
+            println("🔍 Confirmando email para usuario: $userId")
+            println("🔍 URL RPC: ${supabaseClient.getBaseUrl()}/rest/v1/rpc/confirm_user_email")
+            println("🔍 API Key: ${supabaseClient.getAnonKey().take(10)}...")
+            
+            // Llamar a la función RPC de Supabase
+            val requestBody = mapOf("user_id" to userId)
+            println("🔍 Request body: $requestBody")
+            
+            val response = supabaseClient.httpClient.post("${supabaseClient.getBaseUrl()}/rest/v1/rpc/confirm_user_email") {
+                contentType(ContentType.Application.Json)
+                header("apikey", supabaseClient.getAnonKey())
+                header("Authorization", "Bearer ${supabaseClient.getAnonKey()}")
+                setBody(requestBody)
+            }
+            
+            println("🔍 Confirmación email response status: ${response.status}")
+            val responseBody = response.bodyAsText()
+            println("🔍 Confirmación email response body: $responseBody")
+            
+            if (response.status.isSuccess()) {
+                val result = responseBody.toBoolean()
+                println("🔍 Confirmación email result: $result")
+                result
+            } else {
+                println("🚨 Confirmación email failed: ${response.status}")
+                false
+            }
+            
+        } catch (e: Exception) {
+            println("🚨 Error confirmando email: ${e.message}")
+            e.printStackTrace()
+            false
+        }
     }
 }
