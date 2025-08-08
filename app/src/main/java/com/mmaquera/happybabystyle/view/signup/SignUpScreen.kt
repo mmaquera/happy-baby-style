@@ -23,7 +23,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.mmaquera.happybabystyle.ui.theme.HappyBabyStyleTheme
 
-import com.mmaquera.happybabystyle.util.ServiceProvider
+
 import com.mmaquera.happybabystyle.view.login.components.ErrorDialog
 import com.mmaquera.happybabystyle.view.signup.components.SignUpButton
 import com.mmaquera.happybabystyle.view.signup.components.SignUpTextField
@@ -42,9 +42,7 @@ fun SignUpScreen(
 ) {
     val context = LocalContext.current
     val viewModel: SignUpViewModel = remember {
-        SignUpViewModel(
-            signUpUseCase = ServiceProvider.getSignUpUseCase(context)
-        )
+        SignUpViewModel()
     }
     val state = viewModel.state
     val scrollState = rememberScrollState()

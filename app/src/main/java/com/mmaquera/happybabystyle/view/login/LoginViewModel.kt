@@ -14,8 +14,7 @@ import com.mmaquera.happybabystyle.domain.usecase.GetCurrentUserUseCase
 import com.mmaquera.happybabystyle.domain.usecase.LogoutUseCase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-// import javax.inject.Inject  // Temporalmente deshabilitado
-// import dagger.hilt.android.lifecycle.HiltViewModel  // Temporalmente deshabilitado
+import com.mmaquera.happybabystyle.util.ApolloServiceProvider
 
 data class LoginState(
     val email: String = "",
@@ -40,14 +39,14 @@ sealed class LoginEvent {
     object SignUp : LoginEvent()
 }
 
-// @HiltViewModel  // Temporalmente deshabilitado
-class LoginViewModel(
-    private val loginWithEmailUseCase: LoginWithEmailUseCase? = null,
-    private val loginWithGoogleUseCase: LoginWithGoogleUseCase? = null,
-    private val validateCredentialsUseCase: ValidateCredentialsUseCase? = null,
-    private val getCurrentUserUseCase: GetCurrentUserUseCase? = null,
-    private val logoutUseCase: LogoutUseCase? = null
-) : ViewModel() {
+class LoginViewModel : ViewModel() {
+    
+    // Use Cases Apollo GraphQL - Inyección directa sin Hilt
+    private val loginWithEmailUseCase: LoginWithEmailUseCase = ApolloServiceProvider.getLoginWithEmailUseCase()
+    private val loginWithGoogleUseCase: LoginWithGoogleUseCase = ApolloServiceProvider.getLoginWithGoogleUseCase()
+    private val validateCredentialsUseCase: ValidateCredentialsUseCase = ApolloServiceProvider.getValidateCredentialsUseCase()
+    private val getCurrentUserUseCase: GetCurrentUserUseCase = ApolloServiceProvider.getCurrentUserUseCase()
+    private val logoutUseCase: LogoutUseCase = ApolloServiceProvider.getLogoutUseCase()
     
     var state by mutableStateOf(LoginState())
         private set
@@ -109,23 +108,21 @@ class LoginViewModel(
      * Valida las credenciales usando el Use Case
      */
     private fun validateCredentials() {
-        validateCredentialsUseCase?.let { useCase ->
-            viewModelScope.launch {
-                try {
-                    val params = ValidateCredentialsUseCase.Params(
-                        email = state.email,
-                        password = state.password
-                    )
-                    val result = useCase(params)
-                    
-                    state = state.copy(
-                        emailError = result.emailValidation.emailError,
-                        passwordError = result.passwordValidation.passwordError,
-                        isFormValid = result.isValid
-                    )
-                } catch (exception: Exception) {
-                    // Manejar error de validación si es necesario
-                }
+        viewModelScope.launch {
+            try {
+                val params = ValidateCredentialsUseCase.Params(
+                    email = state.email,
+                    password = state.password
+                )
+                val result = validateCredentialsUseCase(params)
+                
+                state = state.copy(
+                    emailError = result.emailValidation.emailError,
+                    passwordError = result.passwordValidation.passwordError,
+                    isFormValid = result.isValid
+                )
+            } catch (exception: Exception) {
+                // Manejar error de validación si es necesario
             }
         }
     }
@@ -134,12 +131,6 @@ class LoginViewModel(
      * Realiza login con email y contraseña usando Clean Architecture
      */
     private fun performEmailSignIn() {
-        if (loginWithEmailUseCase == null) {
-            state = state.copy(
-                errorMessage = "Servicio de autenticación no disponible"
-            )
-            return
-        }
         
         viewModelScope.launch {
             val params = LoginWithEmailUseCase.Params(
@@ -181,12 +172,6 @@ class LoginViewModel(
      * Procesar autenticación con Google usando Clean Architecture
      */
     private fun performGoogleSignIn() {
-        if (loginWithGoogleUseCase == null) {
-            state = state.copy(
-                errorMessage = "Servicio de Google Sign-In no disponible"
-            )
-            return
-        }
         
         state = state.copy(
             isGoogleSignInLoading = true,

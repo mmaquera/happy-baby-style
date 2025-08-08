@@ -1,0 +1,161 @@
+# Queries y mutations para órdenes - Happy Baby Style GraphQL
+
+# Fragment para items de orden
+fragment OrderItemInfo on OrderItem {
+    id
+    orderId
+    productId
+    variantId
+    quantity
+    unitPrice
+    totalPrice
+    productSnapshot
+    createdAt
+    product {
+        id
+        name
+        images
+    }
+    variant {
+        id
+        size
+        color
+    }
+}
+
+# Fragment para información de orden
+fragment OrderInfo on Order {
+    id
+    userId
+    orderNumber
+    status
+    subtotal
+    taxAmount
+    shippingCost
+    discountAmount
+    totalAmount
+    shippingAddress
+    billingAddress
+    notes
+    trackingNumber
+    shippedAt
+    deliveredAt
+    createdAt
+    updatedAt
+    user {
+        id
+        firstName
+        lastName
+    }
+    orderItems {
+        ...OrderItemInfo
+    }
+}
+
+# Fragment para estadísticas de órdenes del usuario
+fragment UserOrderStatsInfo on UserOrderStats {
+    totalOrders
+    totalSpent
+    averageOrderValue
+    lastOrderDate
+    ordersByStatus
+}
+
+# Query para obtener todas las órdenes (con filtros y paginación)
+query GetOrders($filter: OrderFilterInput, $pagination: PaginationInput) {
+    orders(filter: $filter, pagination: $pagination) {
+        orders {
+            ...OrderInfo
+        }
+        total
+        hasMore
+    }
+}
+
+# Query para obtener una orden por ID
+query GetOrder($id: ID!) {
+    order(id: $id) {
+        ...OrderInfo
+    }
+}
+
+# Query para obtener una orden por número
+query GetOrderByNumber($orderNumber: String!) {
+    orderByNumber(orderNumber: $orderNumber) {
+        ...OrderInfo
+    }
+}
+
+# Query para obtener órdenes del usuario
+query GetUserOrders($userId: ID!, $pagination: PaginationInput) {
+    userOrders(userId: $userId, pagination: $pagination) {
+        orders {
+            ...OrderInfo
+        }
+        total
+        hasMore
+    }
+}
+
+# Query para obtener historial de órdenes del usuario con estadísticas
+query GetUserOrderHistory($userId: ID!, $filter: UserOrderHistoryFilter, $pagination: PaginationInput) {
+    userOrderHistory(userId: $userId, filter: $filter, pagination: $pagination) {
+        orders {
+            ...OrderInfo
+        }
+        total
+        hasMore
+        stats {
+            ...UserOrderStatsInfo
+        }
+    }
+}
+
+# Query para obtener items de una orden
+query GetOrderItems($orderId: ID!) {
+    orderItems(orderId: $orderId) {
+        ...OrderItemInfo
+    }
+}
+
+# Mutation para crear una nueva orden
+mutation CreateOrder($input: CreateOrderInput!) {
+    createOrder(input: $input) {
+        ...OrderInfo
+    }
+}
+
+# Mutation para actualizar una orden
+mutation UpdateOrder($id: ID!, $input: UpdateOrderInput!) {
+    updateOrder(id: $id, input: $input) {
+        ...OrderInfo
+    }
+}
+
+# Mutation para actualizar el estado de una orden
+mutation UpdateOrderStatus($id: ID!, $status: OrderStatus!) {
+    updateOrderStatus(id: $id, status: $status) {
+        ...OrderInfo
+    }
+}
+
+# Mutation para cancelar una orden
+mutation CancelOrder($id: ID!) {
+    cancelOrder(id: $id) {
+        ...OrderInfo
+    }
+}
+
+# Mutation para marcar orden como enviada
+mutation ShipOrder($id: ID!, $trackingNumber: String) {
+    shipOrder(id: $id, trackingNumber: $trackingNumber) {
+        ...OrderInfo
+    }
+}
+
+# Mutation para marcar orden como entregada
+mutation DeliverOrder($id: ID!) {
+    deliverOrder(id: $id) {
+        ...OrderInfo
+    }
+}

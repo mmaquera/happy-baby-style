@@ -1,0 +1,64 @@
+# Queries simplificadas para evitar problemas de schema - Happy Baby Style GraphQL
+
+# Fragment simple para producto
+fragment SimpleProductInfo on Product {
+    id
+    name
+    description
+    price
+    sku
+    images
+    isActive
+    isInStock
+    currentPrice
+    hasDiscount
+    discountPercentage
+    rating
+    reviewCount
+    createdAt
+    updatedAt
+}
+
+# Fragment simple para categoría
+fragment SimpleCategoryInfo on Category {
+    id
+    name
+    description
+    slug
+    imageUrl
+    isActive
+    sortOrder
+    createdAt
+    updatedAt
+}
+
+# Query simplificada para obtener productos
+query GetSimpleProducts {
+    products(pagination: {limit: 20, offset: 0}) {
+        products {
+            ...SimpleProductInfo
+            category {
+                ...SimpleCategoryInfo
+            }
+        }
+        total
+        hasMore
+    }
+}
+
+# Query para obtener categorías
+query GetSimpleCategories {
+    categories {
+        ...SimpleCategoryInfo
+    }
+}
+
+# Query para obtener un producto por ID
+query GetSimpleProduct($id: ID!) {
+    product(id: $id) {
+        ...SimpleProductInfo
+        category {
+            ...SimpleCategoryInfo
+        }
+    }
+}

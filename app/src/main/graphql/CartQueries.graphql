@@ -1,0 +1,79 @@
+# Queries y mutations para carrito de compras - Happy Baby Style GraphQL
+
+# Fragment para items del carrito
+fragment CartItemInfo on ShoppingCart {
+    id
+    userId
+    productId
+    variantId
+    quantity
+    createdAt
+    updatedAt
+    user {
+        id
+        userId
+        firstName
+        lastName
+    }
+    product {
+        id
+        name
+        price
+        currentPrice
+        images
+        hasDiscount
+        discountPercentage
+        isInStock
+    }
+    variant {
+        id
+        size
+        color
+        price
+        isInStock
+    }
+}
+
+# Query para obtener el carrito del usuario
+query GetUserCart($userId: ID!) {
+    userCart(userId: $userId) {
+        ...CartItemInfo
+    }
+}
+
+# Query para obtener un item específico del carrito
+query GetCartItem($id: ID!) {
+    cartItem(id: $id) {
+        ...CartItemInfo
+    }
+}
+
+# Mutation para agregar producto al carrito
+mutation AddToCart($input: AddToCartInput!) {
+    addToCart(input: $input) {
+        ...CartItemInfo
+    }
+}
+
+# Mutation para actualizar cantidad en el carrito
+mutation UpdateCartItem($id: ID!, $input: UpdateCartItemInput!) {
+    updateCartItem(id: $id, input: $input) {
+        ...CartItemInfo
+    }
+}
+
+# Mutation para remover item del carrito
+mutation RemoveFromCart($id: ID!) {
+    removeFromCart(id: $id) {
+        success
+        message
+    }
+}
+
+# Mutation para limpiar todo el carrito del usuario
+mutation ClearUserCart($userId: ID!) {
+    clearUserCart(userId: $userId) {
+        success
+        message
+    }
+}

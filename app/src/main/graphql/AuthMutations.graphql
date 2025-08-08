@@ -1,0 +1,165 @@
+# Mutations para autenticación - Happy Baby Style GraphQL
+
+# Fragment para respuesta de autenticación
+fragment AuthResponseInfo on AuthResponse {
+    token
+    accessToken
+    refreshToken
+    success
+    message
+    user {
+        id
+        email
+        role
+        isActive
+        emailVerified
+        lastLoginAt
+        createdAt
+        updatedAt
+        profile {
+            id
+            firstName
+            lastName
+            avatarUrl
+        }
+    }
+}
+
+# Fragment para respuesta de éxito
+fragment SuccessResponseInfo on SuccessResponse {
+    success
+    message
+}
+
+# Mutation para registrar usuario
+mutation RegisterUser($input: RegisterUserInput!) {
+    registerUser(input: $input) {
+        ...AuthResponseInfo
+    }
+}
+
+# Mutation para hacer login
+mutation LoginUser($input: LoginUserInput!) {
+    loginUser(input: $input) {
+        ...AuthResponseInfo
+    }
+}
+
+# Mutation para hacer logout
+mutation LogoutUser {
+    logoutUser {
+        ...SuccessResponseInfo
+    }
+}
+
+# Mutation para refrescar token
+mutation RefreshToken($refreshToken: String!) {
+    refreshToken(refreshToken: $refreshToken) {
+        ...AuthResponseInfo
+    }
+}
+
+# Mutation para crear perfil de usuario
+mutation CreateUserProfile($input: CreateUserProfileInput!) {
+    createUserProfile(input: $input) {
+        id
+        userId
+        firstName
+        lastName
+        phone
+        birthDate
+        avatarUrl
+        createdAt
+        updatedAt
+    }
+}
+
+# Mutation para actualizar perfil de usuario
+mutation UpdateUserProfile($userId: ID!, $input: UpdateUserProfileInput!) {
+    updateUserProfile(userId: $userId, input: $input) {
+        id
+        userId
+        firstName
+        lastName
+        phone
+        birthDate
+        avatarUrl
+        createdAt
+        updatedAt
+    }
+}
+
+# Mutation para actualizar contraseña
+mutation UpdateUserPassword($input: UpdateUserPasswordInput!) {
+    updateUserPassword(input: $input) {
+        ...SuccessResponseInfo
+    }
+}
+
+# Mutation para solicitar reset de contraseña
+mutation RequestPasswordReset($email: String!) {
+    requestPasswordReset(email: $email) {
+        ...SuccessResponseInfo
+    }
+}
+
+# Mutation para resetear contraseña
+mutation ResetPassword($token: String!, $newPassword: String!) {
+    resetPassword(token: $token, newPassword: $newPassword) {
+        ...SuccessResponseInfo
+    }
+}
+
+# Mutation para crear dirección de usuario
+mutation CreateUserAddress($input: CreateUserAddressInput!) {
+    createUserAddress(input: $input) {
+        id
+        userId
+        title
+        firstName
+        lastName
+        addressLine1
+        addressLine2
+        city
+        state
+        postalCode
+        country
+        isDefault
+        createdAt
+        updatedAt
+    }
+}
+
+# Mutation para actualizar dirección de usuario
+mutation UpdateUserAddress($id: ID!, $input: UpdateUserAddressInput!) {
+    updateUserAddress(id: $id, input: $input) {
+        id
+        userId
+        title
+        firstName
+        lastName
+        addressLine1
+        addressLine2
+        city
+        state
+        postalCode
+        country
+        isDefault
+        createdAt
+        updatedAt
+    }
+}
+
+# Mutation para eliminar dirección de usuario
+mutation DeleteUserAddress($id: ID!) {
+    deleteUserAddress(id: $id) {
+        ...SuccessResponseInfo
+    }
+}
+
+# Mutation para establecer dirección por defecto
+mutation SetDefaultAddress($userId: ID!, $addressId: ID!) {
+    setDefaultAddress(userId: $userId, addressId: $addressId) {
+        ...SuccessResponseInfo
+    }
+}

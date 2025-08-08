@@ -10,6 +10,7 @@ import com.mmaquera.happybabystyle.domain.model.AuthException
 import com.mmaquera.happybabystyle.domain.usecase.SignUpUseCase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.mmaquera.happybabystyle.util.ApolloServiceProvider
 
 /**
  * Estados del formulario de registro
@@ -54,9 +55,10 @@ sealed class SignUpEvent {
  * ViewModel para la pantalla de registro
  * Siguiendo MVVM pattern y Clean Architecture
  */
-class SignUpViewModel(
-    private val signUpUseCase: SignUpUseCase? = null
-) : ViewModel() {
+class SignUpViewModel : ViewModel() {
+    
+    // Use Case GraphQL - Inyección directa sin Hilt
+    private val signUpUseCase: SignUpUseCase = ApolloServiceProvider.getSignUpUseCase()
 
     var state by mutableStateOf(SignUpState())
         private set
@@ -146,7 +148,7 @@ class SignUpViewModel(
      * Ejecuta el registro del usuario
      */
     private fun performSignUp() {
-        if (!state.isFormValid || signUpUseCase == null) return
+        if (!state.isFormValid) return
 
         viewModelScope.launch {
             state = state.copy(isLoading = true, errorMessage = null)

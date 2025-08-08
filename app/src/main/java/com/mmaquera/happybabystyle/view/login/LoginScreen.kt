@@ -48,7 +48,7 @@ import androidx.constraintlayout.compose.Dimension
 // import androidx.hilt.navigation.compose.hiltViewModel  // Temporalmente deshabilitado
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mmaquera.happybabystyle.R
-import com.mmaquera.happybabystyle.util.ServiceProvider
+
 import com.mmaquera.happybabystyle.ui.theme.BabyStyleText
 import com.mmaquera.happybabystyle.ui.theme.HappyBabyStyleTheme
 import com.mmaquera.happybabystyle.ui.theme.PrimaryText
@@ -70,11 +70,7 @@ fun LoginScreen(
     println("🏗️ Is Activity context: ${context is Activity}")
     
     val viewModel: LoginViewModel = viewModel { 
-        LoginViewModel(
-            loginWithEmailUseCase = ServiceProvider.getLoginWithEmailUseCase(context),
-            loginWithGoogleUseCase = ServiceProvider.getLoginWithGoogleUseCase(context),
-            validateCredentialsUseCase = ServiceProvider.getValidateCredentialsUseCase(context)
-        )
+        LoginViewModel()
     }
     val state = viewModel.state
 

@@ -35,6 +35,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -324,9 +326,12 @@ fun CategoryScreenPreview() {
 )
 @Composable
 fun CategoryScreenWithSelectionPreview() {
-    val viewModel = CategoryViewModel(CategoryRepositoryImpl())
+    // Use remember to create the ViewModel for preview
+    val viewModel = remember { CategoryViewModel(CategoryRepositoryImpl()) }
     // Simulate selection
-    viewModel.selectCategory(CategoryItem("1", "Bodysuits", CustomIcons.Bodysuit))
+    LaunchedEffect(Unit) {
+        viewModel.selectCategory(CategoryItem("1", "Bodysuits", CustomIcons.Bodysuit))
+    }
     CategoryScreen(viewModel = viewModel)
 }
 
@@ -473,15 +478,17 @@ fun CategoryScreenDarkPreview() {
 )
 @Composable
 fun CategoryScreenLongNamesPreview() {
-    val viewModel = CategoryViewModel(object : CategoryRepository {
-        override fun getCategories(): List<CategoryItem> {
-            return listOf(
-                CategoryItem("1", "Very Long Category Name", CustomIcons.Bodysuit),
-                CategoryItem("2", "Another Very Long Category", Icons.Default.Style),
-                CategoryItem("3", "Super Long Category Name Here", CustomIcons.Pajamas),
-                CategoryItem("4", "Extremely Long Category Name", Icons.Default.Checkroom)
-            )
-        }
-    })
+    val viewModel = remember { 
+        CategoryViewModel(object : CategoryRepository {
+            override fun getCategories(): List<CategoryItem> {
+                return listOf(
+                    CategoryItem("1", "Very Long Category Name", CustomIcons.Bodysuit),
+                    CategoryItem("2", "Another Very Long Category", Icons.Default.Style),
+                    CategoryItem("3", "Super Long Category Name Here", CustomIcons.Pajamas),
+                    CategoryItem("4", "Extremely Long Category Name", Icons.Default.Checkroom)
+                )
+            }
+        })
+    }
     CategoryScreen(viewModel = viewModel)
 }

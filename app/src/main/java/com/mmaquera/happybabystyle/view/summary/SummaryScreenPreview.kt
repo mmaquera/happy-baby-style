@@ -1,6 +1,7 @@
 package com.mmaquera.happybabystyle.view.summary
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
 import com.mmaquera.happybabystyle.ui.theme.HappyBabyStyleTheme
 
@@ -37,9 +38,8 @@ fun SummaryScreenDarkPreview() {
 @Composable
 fun SummaryScreenLoadingPreview() {
     HappyBabyStyleTheme {
-        SummaryScreen(
-            viewModel = SummaryViewModel(SummaryRepositoryImpl())
-        )
+        val viewModel = remember { SummaryViewModel(SummaryRepositoryImpl()) }
+        SummaryScreen(viewModel = viewModel)
     }
 }
 
@@ -47,12 +47,13 @@ fun SummaryScreenLoadingPreview() {
 @Composable
 fun SummaryScreenErrorPreview() {
     HappyBabyStyleTheme {
-        SummaryScreen(
-            viewModel = SummaryViewModel(object : SummaryRepository {
+        val viewModel = remember { 
+            SummaryViewModel(object : SummaryRepository {
                 override fun getOrderSummary(): OrderSummaryInfo {
                     throw RuntimeException("Network error")
                 }
             })
-        )
+        }
+        SummaryScreen(viewModel = viewModel)
     }
 } 

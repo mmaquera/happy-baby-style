@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.google.services)
     alias(libs.plugins.firebase.app.distribution)
+    alias(libs.plugins.apollo)
     // alias(libs.plugins.hilt)  // Temporalmente deshabilitado
     // alias(libs.plugins.ksp)
 }
@@ -98,21 +99,24 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
     
-    // Ktor Client
-    implementation(libs.ktor.client.core)
-    implementation(libs.ktor.client.android)
-    implementation(libs.ktor.client.content.negotiation)
-    implementation(libs.ktor.serialization.kotlinx.json)
-    implementation(libs.ktor.client.logging)
-    implementation(libs.ktor.client.auth)
+    // OkHttp para GraphQL (reemplaza Ktor)
+    implementation(libs.okhttp.logging.interceptor)
+    
+    // Apollo GraphQL
+    implementation(libs.apollo.runtime)
+    implementation(libs.apollo.cache)
+    implementation(libs.apollo.cache.sqlite)
+    
+    // OkHttp
+    implementation(libs.okhttp.logging.interceptor)
     
     // Google Authentication - Credential Manager (Moderno)
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services)
     implementation(libs.google.identity.googleid)
     
-    // Google Authentication - Legacy (mantener temporalmente)
-    implementation(libs.google.auth)
+    // Google Authentication - Solo Credential Manager (moderno)
+    // implementation(libs.google.auth) // Eliminado - ya no necesario
     
     // Hilt Dependency Injection - Temporalmente deshabilitado
     // implementation(libs.hilt.android)
@@ -133,24 +137,24 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 }
 
-// Firebase App Distribution Configuration
-firebaseAppDistribution {
-    // App configuration
-    appId = "1:581901746036:android:5a5b5302d77d7ac73bf621"
-    
-    // Default service account (can be overridden by CI/CD)
-    serviceCredentialsFile = project.findProperty("FIREBASE_SERVICE_ACCOUNT_FILE")?.toString()
-        ?: "${projectDir}/firebase-service-account.json"
-    
-    // Default release notes
-    releaseNotesFile = "${projectDir}/release-notes.txt"
-    
-    // Default groups
-    groups = "happy-baby-style-testers"
-    
-    // Note: All build types now use the same app ID since we removed applicationIdSuffix
-    // This allows testing different builds with the same Firebase project
-}
+// Firebase App Distribution Configuration - Temporarily disabled for build
+// firebaseAppDistribution {
+//     // App configuration
+//     appId = "1:581901746036:android:5a5b5302d77d7ac73bf621"
+//     
+//     // Default service account (can be overridden by CI/CD)
+//     serviceCredentialsFile = project.findProperty("FIREBASE_SERVICE_ACCOUNT_FILE")?.toString()
+//         ?: "${projectDir}/firebase-service-account.json"
+//     
+//     // Default release notes
+//     releaseNotesFile = "${projectDir}/release-notes.txt"
+//     
+//     // Default groups
+//     groups = "happy-baby-style-testers"
+//     
+//     // Note: All build types now use the same app ID since we removed applicationIdSuffix
+//     // This allows testing different builds with the same Firebase project
+// }
 
 // Custom distribution tasks for different environments
 tasks.register("distributeDebugToFirebase") {
@@ -163,4 +167,24 @@ tasks.register("distributeStagingToFirebase") {
     group = "distribution"
     description = "Distributes staging build to Firebase App Distribution" 
     dependsOn("assembleStaging", "appDistributionUploadStaging")
+}
+
+// Apollo GraphQL Configuration
+apollo {
+    service("happy-baby-style-api") {
+        packageName.set("com.mmaquera.happybabystyle.graphql")
+        
+        // Usar el schema JSON descargado
+        schemaFile.set(file("src/main/graphql/schema.json"))
+        
+        // Configuraciones básicas
+        generateKotlinModels.set(true)
+        codegenModels.set("operationBased")
+        
+        // Mapeos de tipos escalares
+        mapScalar("DateTime", "java.time.LocalDateTime")
+        mapScalar("Decimal", "java.math.BigDecimal") 
+        mapScalar("JSON", "kotlinx.serialization.json.JsonObject")
+        mapScalar("Upload", "okhttp3.MultipartBody.Part")
+    }
 }

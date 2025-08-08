@@ -21,6 +21,8 @@ googleServices = "4.4.1"
 firebaseBom = "33.5.1"
 firebaseAppDistribution = "5.0.0"
 ktor = "2.3.12"
+apollo = "3.8.5"
+okhttp = "4.12.0"
 googleAuth = "21.2.0"
 credentialManager = "1.3.0"
 googleIdPlugin = "1.1.1"
@@ -68,21 +70,29 @@ androidx-constraintlayout-compose = { group = "androidx.constraintlayout", name 
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
 
-# Ktor Client
-ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
-ktor-client-android = { group = "io.ktor", name = "ktor-client-android", version.ref = "ktor" }
-ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
-ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
-ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
-ktor-client-auth = { group = "io.ktor", name = "ktor-client-auth", version.ref = "ktor" }
+# Ktor Client (eliminado - reemplazado por OkHttp para GraphQL)
+# ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
+# ktor-client-android = { group = "io.ktor", name = "ktor-client-android", version.ref = "ktor" }
+# ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
+# ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
+# ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
+# ktor-client-auth = { group = "io.ktor", name = "ktor-client-auth", version.ref = "ktor" }
+
+# Apollo GraphQL
+apollo-runtime = { group = "com.apollographql.apollo3", name = "apollo-runtime", version.ref = "apollo" }
+apollo-cache = { group = "com.apollographql.apollo3", name = "apollo-normalized-cache", version.ref = "apollo" }
+apollo-cache-sqlite = { group = "com.apollographql.apollo3", name = "apollo-normalized-cache-sqlite", version.ref = "apollo" }
+
+# OkHttp
+okhttp-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
 
 # Google Authentication - Credential Manager (Moderno)
 androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentialManager" }
 androidx-credentials-play-services = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentialManager" }
 google-identity-googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleIdPlugin" }
 
-# Google Authentication - Legacy (para comparación)
-google-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "googleAuth" }
+# Google Authentication - Legacy (eliminado - solo usar Credential Manager)
+# google-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "googleAuth" }
 
 # Hilt Dependency Injection
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
@@ -100,5 +110,6 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
 firebase-app-distribution = { id = "com.google.firebase.appdistribution", version.ref = "firebaseAppDistribution" }
+apollo = { id = "com.apollographql.apollo3", version.ref = "apollo" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

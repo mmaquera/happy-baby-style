@@ -1,0 +1,103 @@
+# Queries para productos - Happy Baby Style GraphQL
+
+# Fragment común para información de producto
+fragment ProductInfo on Product {
+    id
+    name
+    description
+    price
+    salePrice
+    sku
+    images
+    tags
+    isActive
+    stockQuantity
+    rating
+    reviewCount
+    createdAt
+    updatedAt
+    currentPrice
+    hasDiscount
+    discountPercentage
+    totalStock
+    isInStock
+    category {
+        id
+        name
+        slug
+        imageUrl
+    }
+}
+
+# Fragment para variantes de producto
+fragment ProductVariantInfo on ProductVariant {
+    id
+    productId
+    size
+    color
+    sku
+    price
+    stockQuantity
+    isActive
+    isInStock
+}
+
+# Query para obtener productos con paginación y filtros
+query GetProducts($filter: ProductFilterInput, $pagination: PaginationInput) {
+    products(filter: $filter, pagination: $pagination) {
+        products {
+            ...ProductInfo
+            variants {
+                ...ProductVariantInfo
+            }
+        }
+        total
+        hasMore
+    }
+}
+
+# Query para obtener un producto específico por ID
+query GetProduct($id: ID!) {
+    product(id: $id) {
+        ...ProductInfo
+        variants {
+            ...ProductVariantInfo
+        }
+    }
+}
+
+# Query para obtener productos por categoría
+query GetProductsByCategory($categoryId: ID!, $pagination: PaginationInput) {
+    productsByCategory(categoryId: $categoryId, pagination: $pagination) {
+        products {
+            ...ProductInfo
+            variants {
+                ...ProductVariantInfo
+            }
+        }
+        total
+        hasMore
+    }
+}
+
+# Query para obtener producto por SKU
+query GetProductBySku($sku: String!) {
+    productBySku(sku: $sku) {
+        ...ProductInfo
+        variants {
+            ...ProductVariantInfo
+        }
+    }
+}
+
+# Query para obtener variantes de un producto
+query GetProductVariants($productId: ID!) {
+    productVariants(productId: $productId) {
+        ...ProductVariantInfo
+        product {
+            id
+            name
+            price
+        }
+    }
+}
