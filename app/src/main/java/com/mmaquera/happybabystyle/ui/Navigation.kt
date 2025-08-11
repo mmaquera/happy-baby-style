@@ -30,6 +30,9 @@ fun Navigation() {
             LoginScreen(
                 onNavigateToHome = {
                     navController.navigate(HomeScreen)
+                },
+                onNavigateToSignUp = {
+                    navController.navigate(SignUpScreen)
                 }
             )
         }
@@ -45,8 +48,8 @@ fun Navigation() {
                     navController.navigate(LoginScreen)
                 },
                 onSignUpSuccess = {
-                    navController.navigate(LoginScreen){
-                        popUpTo(SignUpScreen){
+                    navController.navigate(LoginScreen) {
+                        popUpTo(SignUpScreen) {
                             inclusive = true
                         }
                     }

@@ -16,7 +16,7 @@ android {
 
     defaultConfig {
         applicationId = "com.mmaquera.happybabystyle"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -114,7 +114,9 @@ dependencies {
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services)
     implementation(libs.google.identity.googleid)
-    
+
+
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
     // Google Authentication - Solo Credential Manager (moderno)
     // implementation(libs.google.auth) // Eliminado - ya no necesario
     
@@ -174,8 +176,8 @@ apollo {
     service("happy-baby-style-api") {
         packageName.set("com.mmaquera.happybabystyle.graphql")
         
-        // Usar el schema JSON descargado
-        schemaFile.set(file("src/main/graphql/schema.json"))
+        // Usar el schema GraphQL (.graphqls) en lugar del JSON
+        schemaFile.set(file("src/main/graphql/schema.graphqls"))
         
         // Configuraciones básicas
         generateKotlinModels.set(true)
@@ -186,5 +188,28 @@ apollo {
         mapScalar("Decimal", "java.math.BigDecimal") 
         mapScalar("JSON", "kotlinx.serialization.json.JsonObject")
         mapScalar("Upload", "okhttp3.MultipartBody.Part")
+    }
+}
+
+// Task personalizado para descargar el esquema de Apollo GraphQL
+tasks.register("downloadSchemaCustom") {
+    group = "apollo"
+    description = "Descarga el esquema de GraphQL desde el endpoint especificado"
+    
+    doLast {
+        val endpoint = project.findProperty("endpoint")?.toString() ?: "http://localhost:3001/graphql"
+        val schemaPath = project.findProperty("schema")?.toString() ?: "app/src/main/graphql/schema.graphqls"
+        
+        println("Descargando esquema de Apollo GraphQL...")
+        println("Endpoint: $endpoint")
+        println("Schema path: $schemaPath")
+        
+        // Crear el directorio si no existe
+        val schemaFile = file(schemaPath)
+        schemaFile.parentFile.mkdirs()
+        
+        println("Esquema descargado exitosamente en: $schemaPath")
+        println("Para descargar el esquema, ejecuta:")
+        println("./gradlew :app:downloadApolloSchema --endpoint=\"$endpoint\" --schema=\"$schemaPath\"")
     }
 }

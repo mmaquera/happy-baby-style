@@ -1,20 +1,5 @@
 package com.mmaquera.happybabystyle.presentation.viewmodel
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.mmaquera.happybabystyle.domain.model.Product
-import com.mmaquera.happybabystyle.domain.model.Category
-import com.mmaquera.happybabystyle.domain.model.PaginatedResult
-import com.mmaquera.happybabystyle.domain.usecase.GetProductsUseCase
-import com.mmaquera.happybabystyle.domain.usecase.GetProductByIdUseCase
-import com.mmaquera.happybabystyle.domain.usecase.GetCategoriesUseCase
-import com.mmaquera.happybabystyle.util.ApolloServiceProvider
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.launch
-
 /**
  * ViewModel de ejemplo que demuestra el uso de GraphQL
  * Implementa Clean Architecture con GraphQL como fuente de datos
@@ -25,6 +10,7 @@ import kotlinx.coroutines.launch
  * - Implementa búsqueda y filtros
  * - Cache automático con GraphQL
  */
+/*
 class GraphQLProductViewModel : ViewModel() {
     
     // Use Cases - Ahora sin dependencia de Context
@@ -236,4 +222,4 @@ data class ProductDetailUiState(
     val isLoading: Boolean = false,
     val product: Product? = null,
     val error: String? = null
-)
+)*/

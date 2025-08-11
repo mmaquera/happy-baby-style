@@ -1,85 +1,36 @@
-# Queries para usuarios y autenticación - Happy Baby Style GraphQL
+# User Queries
+# These queries handle user data retrieval
 
-# Fragment para información básica de usuario
-fragment UserInfo on User {
-    id
-    email
-    role
-    isActive
-    emailVerified
-    lastLoginAt
-    createdAt
-    updatedAt
-}
-
-# Fragment para perfil de usuario
-fragment UserProfileInfo on UserProfile {
-    id
-    userId
-    firstName
-    lastName
-    phone
-    birthDate
-    avatarUrl
-    createdAt
-    updatedAt
-}
-
-# Fragment para dirección de usuario
-fragment UserAddressInfo on UserAddress {
-    id
-    userId
-    title
-    firstName
-    lastName
-    addressLine1
-    addressLine2
-    city
-    state
-    postalCode
-    country
-    isDefault
-    createdAt
-    updatedAt
-}
-
-# Query para obtener el usuario actual
-query GetCurrentUser {
-    currentUser {
-        ...UserInfo
-        profile {
-            ...UserProfileInfo
-        }
+query GetUsers {
+  users {
+    users {
+      ...UserBasicInfo
     }
+  }
 }
 
-# Query para obtener un usuario por ID
 query GetUser($id: ID!) {
-    user(id: $id) {
-        ...UserInfo
-        profile {
-            ...UserProfileInfo
-        }
-    }
+  user(id: $id) {
+    ...UserBasicInfo
+  }
 }
 
-# Query para obtener el perfil de usuario
-query GetUserProfile($userId: ID!) {
-    userProfile(userId: $userId) {
-        ...UserProfileInfo
-    }
+query GetUserProfile($id: ID!) {
+  userProfile(userId: $id) {
+    ...UserProfileBasicInfo
+  }
 }
 
-# Query para obtener las direcciones de un usuario
-query GetUserAddresses($userId: ID!) {
-    userAddresses(userId: $userId) {
-        ...UserAddressInfo
-    }
+query GetCurrentUser {
+  currentUser {
+    ...UserBasicInfo
+  }
 }
 
-# Query para obtener una dirección específica
-query GetUserAddress($id: ID!) {
-    userAddress(id: $id) {
-        ...UserAddressInfo
-    }
+
+
+query GetActiveUsersCount {
+  activeUsers {
+    ...UserBasicInfo
+  }
 }

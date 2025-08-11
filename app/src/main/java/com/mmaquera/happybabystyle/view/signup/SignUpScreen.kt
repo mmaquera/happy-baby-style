@@ -54,145 +54,153 @@ fun SignUpScreen(
         }
     }
 
-    ConstraintLayout(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFFFFFFF)) // Color de fondo del diseño
-            .verticalScroll(scrollState)
-            .padding(horizontal = 16.dp)
-    ) {
-        // Referencias para ConstraintLayout
-        val (
-            header,
-            nameField,
-            emailField,
-            passwordField,
-            confirmPasswordField,
-            signUpButton,
-            loginPrompt
-        ) = createRefs()
-
-        // Header con botón back y título
-        SignUpHeader(
-            onNavigateBack = onNavigateBack,
+    Scaffold(
+        modifier = Modifier,
+        contentWindowInsets = WindowInsets.safeDrawing
+    ) { innerPadding ->
+        ConstraintLayout(
             modifier = Modifier
-                .constrainAs(header) {
-                    top.linkTo(parent.top, margin = 16.dp)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                    width = Dimension.fillToConstraints
-                }
-        )
+                .fillMaxSize()
+                .background(Color(0xFFFFFFFF)) // Color de fondo del diseño
+                .verticalScroll(scrollState)
+                .padding(innerPadding)
+                .padding(horizontal = 16.dp)
+        ) {
+            // Referencias para ConstraintLayout
+            val (
+                header,
+                nameField,
+                emailField,
+                passwordField,
+                confirmPasswordField,
+                signUpButton,
+                loginPrompt
+            ) = createRefs()
 
-        // Campo Name
-        SignUpTextField(
-            value = state.name,
-            onValueChange = { viewModel.handleEvent(SignUpEvent.NameChanged(it)) },
-            label = "Nombre",
-            placeholder = "Ingresa tu nombre",
-            isError = state.nameError != null,
-            errorMessage = state.nameError,
-            keyboardType = KeyboardType.Text,
-            modifier = Modifier
-                .constrainAs(nameField) {
-                    top.linkTo(header.bottom, margin = 24.dp)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                    width = Dimension.fillToConstraints
-                }
-        )
+            // Header con botón back y título
+            SignUpHeader(
+                onNavigateBack = onNavigateBack,
+                modifier = Modifier
+                    .constrainAs(header) {
+                        top.linkTo(parent.top)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                        width = Dimension.fillToConstraints
+                    }
+            )
 
-        // Campo Email
-        SignUpTextField(
-            value = state.email,
-            onValueChange = { viewModel.handleEvent(SignUpEvent.EmailChanged(it)) },
-            label = "Correo electrónico",
-            placeholder = "Ingresa tu email",
-            isError = state.emailError != null,
-            errorMessage = state.emailError,
-            keyboardType = KeyboardType.Email,
-            modifier = Modifier
-                .constrainAs(emailField) {
-                    top.linkTo(nameField.bottom, margin = 20.dp)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                    width = Dimension.fillToConstraints
-                }
-        )
+            // Campo Name
+            SignUpTextField(
+                value = state.name,
+                onValueChange = { viewModel.handleEvent(SignUpEvent.NameChanged(it)) },
+                label = "Nombre",
+                placeholder = "Ingresa tu nombre",
+                isError = state.nameError != null,
+                errorMessage = state.nameError,
+                keyboardType = KeyboardType.Text,
+                modifier = Modifier
+                    .constrainAs(nameField) {
+                        top.linkTo(header.bottom, margin = 24.dp)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                        width = Dimension.fillToConstraints
+                    }
+            )
 
-        // Campo Password
-        SignUpTextField(
-            value = state.password,
-            onValueChange = { viewModel.handleEvent(SignUpEvent.PasswordChanged(it)) },
-            label = "Contraseña",
-            placeholder = "Ingresa tu contraseña",
-            isPassword = true,
-            showPassword = state.showPassword,
-            onTogglePasswordVisibility = { 
-                viewModel.handleEvent(SignUpEvent.TogglePasswordVisibility) 
-            },
-            isError = state.passwordError != null,
-            errorMessage = state.passwordError,
-            keyboardType = KeyboardType.Password,
-            modifier = Modifier
-                .constrainAs(passwordField) {
-                    top.linkTo(emailField.bottom, margin = 20.dp)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                    width = Dimension.fillToConstraints
-                }
-        )
+            // Campo Email
+            SignUpTextField(
+                value = state.email,
+                onValueChange = { viewModel.handleEvent(SignUpEvent.EmailChanged(it)) },
+                label = "Correo electrónico",
+                placeholder = "Ingresa tu email",
+                isError = state.emailError != null,
+                errorMessage = state.emailError,
+                keyboardType = KeyboardType.Email,
+                modifier = Modifier
+                    .constrainAs(emailField) {
+                        top.linkTo(nameField.bottom, margin = 20.dp)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                        width = Dimension.fillToConstraints
+                    }
+            )
 
-        // Campo Confirm Password
-        SignUpTextField(
-            value = state.confirmPassword,
-            onValueChange = { viewModel.handleEvent(SignUpEvent.ConfirmPasswordChanged(it)) },
-            label = "Confirmar contraseña",
-            placeholder = "Confirma tu contraseña",
-            isPassword = true,
-            showPassword = state.showConfirmPassword,
-            onTogglePasswordVisibility = { 
-                viewModel.handleEvent(SignUpEvent.ToggleConfirmPasswordVisibility) 
-            },
-            isError = state.confirmPasswordError != null,
-            errorMessage = state.confirmPasswordError,
-            keyboardType = KeyboardType.Password,
-            modifier = Modifier
-                .constrainAs(confirmPasswordField) {
-                    top.linkTo(passwordField.bottom, margin = 20.dp)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                    width = Dimension.fillToConstraints
-                }
-        )
+            // Campo Password
+            SignUpTextField(
+                value = state.password,
+                onValueChange = { viewModel.handleEvent(SignUpEvent.PasswordChanged(it)) },
+                label = "Contraseña",
+                placeholder = "Ingresa tu contraseña",
+                isPassword = true,
+                showPassword = state.showPassword,
+                onTogglePasswordVisibility = {
+                    viewModel.handleEvent(SignUpEvent.TogglePasswordVisibility)
+                },
+                isError = state.passwordError != null,
+                errorMessage = state.passwordError,
+                keyboardType = KeyboardType.Password,
+                modifier = Modifier
+                    .constrainAs(passwordField) {
+                        top.linkTo(emailField.bottom, margin = 20.dp)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                        width = Dimension.fillToConstraints
+                    }
+            )
 
-        // Botón Sign Up
-        SignUpButton(
-            onClick = { viewModel.handleEvent(SignUpEvent.SignUp) },
-            text = "Registrate",
-            isLoading = state.isLoading,
-            enabled = state.isFormValid,
-            modifier = Modifier
-                .constrainAs(signUpButton) {
-                    top.linkTo(confirmPasswordField.bottom, margin = 24.dp)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                    width = Dimension.fillToConstraints
-                }
-        )
+            // Campo Confirm Password
+            SignUpTextField(
+                value = state.confirmPassword,
+                onValueChange = { viewModel.handleEvent(SignUpEvent.ConfirmPasswordChanged(it)) },
+                label = "Confirmar contraseña",
+                placeholder = "Confirma tu contraseña",
+                isPassword = true,
+                showPassword = state.showConfirmPassword,
+                onTogglePasswordVisibility = {
+                    viewModel.handleEvent(SignUpEvent.ToggleConfirmPasswordVisibility)
+                },
+                isError = state.confirmPasswordError != null,
+                errorMessage = state.confirmPasswordError,
+                keyboardType = KeyboardType.Password,
+                modifier = Modifier
+                    .constrainAs(confirmPasswordField) {
+                        top.linkTo(passwordField.bottom, margin = 20.dp)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                        width = Dimension.fillToConstraints
+                    }
+            )
 
-        // Link "Already have an account? Login"
-        LoginPrompt(
-            onNavigateToLogin = onNavigateToLogin,
-            modifier = Modifier
-                .constrainAs(loginPrompt) {
-                    top.linkTo(signUpButton.bottom, margin = 16.dp)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                    width = Dimension.fillToConstraints
-                }
-        )
+            // Botón Sign Up
+            SignUpButton(
+                onClick = { viewModel.handleEvent(SignUpEvent.SignUp) },
+                text = "Registrate",
+                isLoading = state.isLoading,
+                enabled = state.isFormValid,
+                modifier = Modifier
+                    .constrainAs(signUpButton) {
+                        top.linkTo(confirmPasswordField.bottom, margin = 24.dp)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                        width = Dimension.fillToConstraints
+                    }
+            )
+
+            // Link "Already have an account? Login"
+            LoginPrompt(
+                onNavigateToLogin = onNavigateToLogin,
+                modifier = Modifier
+                    .constrainAs(loginPrompt) {
+                        top.linkTo(signUpButton.bottom, margin = 16.dp)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                        width = Dimension.fillToConstraints
+                    }
+            )
+        }
     }
+
+
 
     // Dialog de error
     if (state.errorMessage != null) {
@@ -280,7 +288,7 @@ private fun LoginPrompt(
             .padding(vertical = 8.dp)
     ) {
         val text = createRef()
-        
+
         Text(
             text = "¿Ya tienes una cuenta? Inicia sesión",
             fontSize = 14.sp,

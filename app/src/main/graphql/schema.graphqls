@@ -1,0 +1,2596 @@
+enum OrderStatus {
+  pending
+
+  confirmed
+
+  processing
+
+  shipped
+
+  delivered
+
+  cancelled
+
+  refunded
+}
+
+enum PaymentMethodType {
+  credit_card
+
+  debit_card
+
+  paypal
+
+  bank_transfer
+
+  cash_on_delivery
+}
+
+enum UserRole {
+  admin
+
+  customer
+
+  staff
+}
+
+enum AuthProvider {
+  email
+
+  google
+
+  facebook
+
+  apple
+}
+
+enum TransactionType {
+  payment
+
+  refund
+
+  chargeback
+
+  adjustment
+}
+
+enum TransactionStatus {
+  pending
+
+  completed
+
+  failed
+
+  cancelled
+
+  refunded
+}
+
+enum DiscountType {
+  percentage
+
+  fixed_amount
+
+  free_shipping
+}
+
+enum InventoryTransactionType {
+  purchase
+
+  sale
+
+  return
+
+  adjustment
+
+  transfer
+}
+
+enum StockAlertType {
+  low_stock
+
+  out_of_stock
+
+  overstock
+}
+
+enum NotificationType {
+  order_status
+
+  payment
+
+  shipping
+
+  marketing
+
+  system
+}
+
+enum RewardPointType {
+  earned
+
+  redeemed
+
+  expired
+
+  bonus
+}
+
+"""
+DateTime custom scalar type
+"""
+scalar DateTime
+
+"""
+Decimal custom scalar type
+"""
+scalar Decimal
+
+"""
+JSON custom scalar type
+"""
+scalar JSON
+
+scalar Upload
+
+type UserAccount {
+  id: ID!
+
+  userId: ID!
+
+  provider: AuthProvider!
+
+  providerAccountId: String!
+
+  accessToken: String
+
+  refreshToken: String
+
+  tokenType: String
+
+  scope: String
+
+  idToken: String
+
+  expiresAt: DateTime
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+}
+
+"""
+The `ID` scalar type represents a unique identifier, often used to refetch an object or as key for a cache. The ID type appears in a JSON response as a String; however, it is not intended to be human-readable. When expected as an input type, any string (such as `"4"`) or integer (such as `4`) input value will be accepted as an ID.
+"""
+scalar ID
+
+"""
+The `String` scalar type represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text.
+"""
+scalar String
+
+type UserSession {
+  id: ID!
+
+  userId: ID!
+
+  sessionToken: String!
+
+  accessToken: String!
+
+  refreshToken: String
+
+  expiresAt: DateTime!
+
+  userAgent: String
+
+  ipAddress: String
+
+  isActive: Boolean!
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+}
+
+"""
+The `Boolean` scalar type represents `true` or `false`.
+"""
+scalar Boolean
+
+type UserSessionAnalytics {
+  id: ID!
+
+  sessionId: String!
+
+  userId: ID!
+
+  pageViews: Int!
+
+  timeSpent: Int!
+
+  bounceRate: Float!
+
+  conversionRate: Float!
+
+  deviceType: String
+
+  browser: String
+
+  os: String
+
+  country: String
+
+  city: String
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+}
+
+"""
+The `Int` scalar type represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.
+"""
+scalar Int
+
+"""
+The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point).
+"""
+scalar Float
+
+type User {
+  id: ID!
+
+  email: String!
+
+  role: UserRole!
+
+  isActive: Boolean!
+
+  emailVerified: Boolean!
+
+  lastLoginAt: DateTime
+
+  profile: UserProfile
+
+  addresses: [UserAddress!]!
+
+  accounts: [UserAccount!]!
+
+  sessions: [UserSession!]!
+
+  sessionsAnalytics: [UserSessionAnalytics!]!
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+}
+
+type UserProfile {
+  id: ID!
+
+  email: String!
+
+  firstName: String!
+
+  lastName: String!
+
+  phone: String
+
+  dateOfBirth: DateTime
+
+  avatar: String
+
+  role: UserRole!
+
+  emailVerified: Boolean!
+
+  isActive: Boolean!
+
+  lastLoginAt: DateTime
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+
+  fullName: String
+
+  addresses: [UserAddress!]!
+
+  orders: [Order!]!
+
+  cartItems: [ShoppingCartItem!]!
+
+  favorites: [UserFavorite!]!
+
+  paymentMethods: [PaymentMethod!]!
+
+  savedPaymentMethods: [SavedPaymentMethod!]!
+
+  transactions: [Transaction!]!
+
+  productReviews: [ProductReview!]!
+
+  reviewVotes: [ReviewVote!]!
+
+  appEvents: [AppEvent!]!
+
+  auditLogs: [AuditLog!]!
+
+  securityEvents: [SecurityEvent!]!
+
+  pushNotifications: [PushNotification!]!
+
+  rewardPoints: [RewardPoint!]!
+
+  couponUsage: [CouponUsage!]!
+
+  newsletterSubscriptions: [NewsletterSubscription!]!
+}
+
+type UserAddress {
+  id: ID!
+
+  userId: ID!
+
+  type: String!
+
+  firstName: String!
+
+  lastName: String!
+
+  company: String
+
+  address1: String!
+
+  address2: String
+
+  city: String!
+
+  state: String!
+
+  postalCode: String!
+
+  country: String!
+
+  phone: String
+
+  isDefault: Boolean!
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+
+  fullName: String!
+
+  fullAddress: String!
+
+  user: UserProfile!
+
+  orders: [Order!]!
+}
+
+type Category {
+  id: ID!
+
+  name: String!
+
+  description: String
+
+  slug: String!
+
+  image: String
+
+  isActive: Boolean!
+
+  sortOrder: Int!
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+
+  products: [Product!]!
+}
+
+type Product {
+  id: ID!
+
+  categoryId: ID
+
+  name: String!
+
+  description: String
+
+  price: Decimal!
+
+  salePrice: Decimal
+
+  sku: String!
+
+  images: [String!]!
+
+  attributes: JSON!
+
+  isActive: Boolean!
+
+  stockQuantity: Int!
+
+  tags: [String!]!
+
+  rating: Decimal
+
+  reviewCount: Int!
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+
+  currentPrice: Decimal!
+
+  hasDiscount: Boolean!
+
+  discountPercentage: Int!
+
+  totalStock: Int!
+
+  isInStock: Boolean!
+
+  category: Category
+
+  variants: [ProductVariant!]!
+
+  cartItems: [ShoppingCartItem!]!
+
+  favorites: [UserFavorite!]!
+
+  orderItems: [OrderItem!]!
+
+  reviews: [ProductReview!]!
+
+  appEvents: [AppEvent!]!
+
+  inventoryTransactions: [InventoryTransaction!]!
+
+  stockAlerts: [StockAlert!]!
+}
+
+type ProductVariant {
+  id: ID!
+
+  productId: ID!
+
+  name: String!
+
+  price: Decimal!
+
+  sku: String!
+
+  stockQuantity: Int!
+
+  attributes: JSON!
+
+  isActive: Boolean!
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+
+  isInStock: Boolean!
+
+  product: Product!
+}
+
+type ShoppingCart {
+  id: ID!
+
+  userId: String
+
+  sessionId: String
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+
+  items: [ShoppingCartItem!]!
+}
+
+type ShoppingCartItem {
+  id: ID!
+
+  cartId: ID!
+
+  productId: ID!
+
+  quantity: Int!
+
+  price: Decimal!
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+
+  cart: ShoppingCart!
+
+  product: Product!
+}
+
+type UserFavorite {
+  id: ID!
+
+  userId: ID!
+
+  productId: ID!
+
+  createdAt: DateTime!
+
+  user: UserProfile!
+
+  product: Product!
+}
+
+type Order {
+  id: ID!
+
+  userId: ID!
+
+  orderNumber: String!
+
+  status: OrderStatus!
+
+  subtotal: Decimal!
+
+  taxAmount: Decimal!
+
+  shippingAmount: Decimal!
+
+  discountAmount: Decimal!
+
+  totalAmount: Decimal!
+
+  currency: String!
+
+  shippingAddressId: String
+
+  notes: String
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+
+  user: UserProfile!
+
+  items: [OrderItem!]!
+
+  shippingAddress: UserAddress
+
+  paymentMethods: [PaymentMethod!]!
+
+  tracking: [OrderTracking!]!
+
+  transactions: [Transaction!]!
+
+  couponUsage: [CouponUsage!]!
+}
+
+type OrderItem {
+  id: ID!
+
+  orderId: ID!
+
+  productId: ID!
+
+  quantity: Int!
+
+  unitPrice: Decimal!
+
+  totalPrice: Decimal!
+
+  createdAt: DateTime!
+
+  order: Order!
+
+  product: Product!
+}
+
+type OrderTracking {
+  id: ID!
+
+  orderId: ID!
+
+  status: String!
+
+  location: String
+
+  description: String
+
+  trackingNumber: String
+
+  carrierId: String
+
+  estimatedDelivery: DateTime
+
+  actualDelivery: DateTime
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+
+  order: Order!
+
+  carrier: Carrier
+}
+
+type PaymentMethod {
+  id: ID!
+
+  orderId: ID!
+
+  type: PaymentMethodType!
+
+  amount: Decimal!
+
+  status: String!
+
+  transactionId: String
+
+  metadata: JSON!
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+
+  order: Order!
+}
+
+type SavedPaymentMethod {
+  id: ID!
+
+  userId: ID!
+
+  type: PaymentMethodType!
+
+  provider: String!
+
+  lastFour: String
+
+  expiryMonth: Int
+
+  expiryYear: Int
+
+  cardholderName: String
+
+  isDefault: Boolean!
+
+  isActive: Boolean!
+
+  metadata: JSON!
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+
+  user: UserProfile!
+}
+
+type Transaction {
+  id: ID!
+
+  orderId: ID!
+
+  userId: ID!
+
+  type: TransactionType!
+
+  amount: Decimal!
+
+  currency: String!
+
+  status: TransactionStatus!
+
+  gateway: String
+
+  gatewayTransactionId: String
+
+  metadata: JSON!
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+
+  order: Order!
+
+  user: UserProfile!
+}
+
+type Coupon {
+  id: ID!
+
+  code: String!
+
+  name: String!
+
+  description: String
+
+  discountType: DiscountType!
+
+  discountValue: Decimal!
+
+  minimumAmount: Decimal
+
+  maximumDiscount: Decimal
+
+  usageLimit: Int
+
+  usedCount: Int!
+
+  validFrom: DateTime!
+
+  validUntil: DateTime!
+
+  isActive: Boolean!
+
+  isFirstTimeOnly: Boolean!
+
+  applicableCategories: [String!]!
+
+  applicableProducts: [String!]!
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+
+  usage: [CouponUsage!]!
+}
+
+type CouponUsage {
+  id: ID!
+
+  couponId: ID!
+
+  userId: ID!
+
+  orderId: ID!
+
+  discountAmount: Decimal!
+
+  usedAt: DateTime!
+
+  coupon: Coupon!
+
+  user: UserProfile!
+
+  order: Order!
+}
+
+type ProductReview {
+  id: ID!
+
+  productId: ID!
+
+  userId: ID!
+
+  rating: Int!
+
+  title: String
+
+  comment: String
+
+  isApproved: Boolean!
+
+  isVerified: Boolean!
+
+  helpfulCount: Int!
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+
+  product: Product!
+
+  user: UserProfile!
+
+  photos: [ReviewPhoto!]!
+
+  votes: [ReviewVote!]!
+}
+
+type ReviewPhoto {
+  id: ID!
+
+  reviewId: ID!
+
+  imageUrl: String!
+
+  caption: String
+
+  sortOrder: Int!
+
+  createdAt: DateTime!
+
+  review: ProductReview!
+}
+
+type ReviewVote {
+  id: ID!
+
+  reviewId: ID!
+
+  userId: ID!
+
+  isHelpful: Boolean!
+
+  createdAt: DateTime!
+
+  review: ProductReview!
+
+  user: UserProfile!
+}
+
+type InventoryTransaction {
+  id: ID!
+
+  productId: ID!
+
+  type: InventoryTransactionType!
+
+  quantity: Int!
+
+  reference: String
+
+  notes: String
+
+  createdAt: DateTime!
+
+  product: Product!
+}
+
+type StockAlert {
+  id: ID!
+
+  productId: ID!
+
+  type: StockAlertType!
+
+  threshold: Int!
+
+  currentStock: Int!
+
+  isActive: Boolean!
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+
+  product: Product!
+}
+
+type Carrier {
+  id: ID!
+
+  name: String!
+
+  code: String!
+
+  trackingUrlTemplate: String
+
+  isActive: Boolean!
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+
+  tracking: [OrderTracking!]!
+}
+
+type ShippingZone {
+  id: ID!
+
+  name: String!
+
+  countries: [String!]!
+
+  states: [String!]!
+
+  cities: [String!]!
+
+  postalCodes: [String!]!
+
+  isActive: Boolean!
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+
+  rates: [ShippingRate!]!
+}
+
+type ShippingRate {
+  id: ID!
+
+  zoneId: ID!
+
+  name: String!
+
+  minWeight: Decimal
+
+  maxWeight: Decimal
+
+  price: Decimal!
+
+  isActive: Boolean!
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+
+  zone: ShippingZone!
+}
+
+type DeliverySlot {
+  id: ID!
+
+  dayOfWeek: Int!
+
+  startTime: String!
+
+  endTime: String!
+
+  maxOrders: Int!
+
+  isActive: Boolean!
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+}
+
+type LoyaltyProgram {
+  id: ID!
+
+  name: String!
+
+  description: String
+
+  pointsPerDollar: Decimal!
+
+  redemptionRate: Decimal!
+
+  expiryMonths: Int!
+
+  isActive: Boolean!
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+}
+
+type RewardPoint {
+  id: ID!
+
+  userId: ID!
+
+  points: Int!
+
+  type: RewardPointType!
+
+  expiresAt: DateTime
+
+  createdAt: DateTime!
+
+  user: UserProfile!
+}
+
+type PushNotification {
+  id: ID!
+
+  userId: ID!
+
+  title: String!
+
+  body: String!
+
+  type: NotificationType!
+
+  data: JSON!
+
+  isRead: Boolean!
+
+  readAt: DateTime
+
+  sentAt: DateTime
+
+  deliveredAt: DateTime
+
+  failedAt: DateTime
+
+  errorMessage: String
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+
+  user: UserProfile!
+}
+
+type NotificationTemplate {
+  id: ID!
+
+  name: String!
+
+  type: NotificationType!
+
+  title: String!
+
+  body: String!
+
+  variables: [String!]!
+
+  isActive: Boolean!
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+}
+
+type EmailTemplate {
+  id: ID!
+
+  name: String!
+
+  subject: String!
+
+  body: String!
+
+  variables: [String!]!
+
+  isActive: Boolean!
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+}
+
+type NewsletterSubscription {
+  id: ID!
+
+  email: String!
+
+  userId: String
+
+  isActive: Boolean!
+
+  subscribedAt: DateTime!
+
+  unsubscribedAt: DateTime
+
+  user: UserProfile
+}
+
+type AppEvent {
+  id: ID!
+
+  userId: String
+
+  sessionId: String
+
+  eventType: String!
+
+  eventData: JSON
+
+  productId: String
+
+  categoryId: String
+
+  deviceInfo: JSON
+
+  location: JSON
+
+  userAgent: String
+
+  ipAddress: String
+
+  createdAt: DateTime!
+
+  user: UserProfile
+
+  product: Product
+}
+
+type AuditLog {
+  id: ID!
+
+  userId: String
+
+  action: String!
+
+  tableName: String
+
+  recordId: String
+
+  oldValues: JSON
+
+  newValues: JSON
+
+  ipAddress: String
+
+  userAgent: String
+
+  createdAt: DateTime!
+
+  user: UserProfile
+}
+
+type SecurityEvent {
+  id: ID!
+
+  userId: String
+
+  eventType: String!
+
+  description: String!
+
+  ipAddress: String
+
+  userAgent: String
+
+  metadata: JSON!
+
+  createdAt: DateTime!
+
+  user: UserProfile
+}
+
+type StoreSettings {
+  id: ID!
+
+  settingKey: String!
+
+  settingValue: String!
+
+  description: String
+
+  category: String
+
+  isActive: Boolean!
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+}
+
+type TaxRate {
+  id: ID!
+
+  name: String!
+
+  rate: Decimal!
+
+  country: String
+
+  state: String
+
+  city: String
+
+  isActive: Boolean!
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+}
+
+type Image {
+  id: ID!
+
+  fileName: String!
+
+  originalName: String!
+
+  mimeType: String!
+
+  size: Int!
+
+  url: String!
+
+  bucket: String
+
+  path: String
+
+  entityType: String
+
+  entityId: String
+
+  createdAt: DateTime!
+}
+
+input CreateUserProfileInput {
+  email: String!
+
+  firstName: String!
+
+  lastName: String!
+
+  phone: String
+
+  dateOfBirth: DateTime
+
+  avatar: String
+
+  role: UserRole
+
+  isActive: Boolean
+
+  password: String
+}
+
+input UpdateUserProfileInput {
+  firstName: String
+
+  lastName: String
+
+  phone: String
+
+  dateOfBirth: DateTime
+
+  avatar: String
+
+  role: UserRole
+
+  isActive: Boolean
+}
+
+input UpdateUserInput {
+  email: String
+
+  role: UserRole
+
+  isActive: Boolean
+
+  profile: UpdateUserProfileInput
+}
+
+input CreateUserAddressInput {
+  userId: ID!
+
+  type: String!
+
+  firstName: String!
+
+  lastName: String!
+
+  company: String
+
+  address1: String!
+
+  address2: String
+
+  city: String!
+
+  state: String!
+
+  postalCode: String!
+
+  country: String
+
+  phone: String
+
+  isDefault: Boolean
+}
+
+input UpdateUserAddressInput {
+  type: String
+
+  firstName: String
+
+  lastName: String
+
+  company: String
+
+  address1: String
+
+  address2: String
+
+  city: String
+
+  state: String
+
+  postalCode: String
+
+  country: String
+
+  phone: String
+
+  isDefault: Boolean
+}
+
+input CreateCategoryInput {
+  name: String!
+
+  description: String
+
+  slug: String!
+
+  image: String
+
+  isActive: Boolean
+
+  sortOrder: Int
+}
+
+input UpdateCategoryInput {
+  name: String
+
+  description: String
+
+  slug: String
+
+  image: String
+
+  isActive: Boolean
+
+  sortOrder: Int
+}
+
+input CreateProductInput {
+  categoryId: ID
+
+  name: String!
+
+  description: String
+
+  price: Decimal!
+
+  salePrice: Decimal
+
+  sku: String!
+
+  images: [String!]
+
+  attributes: JSON
+
+  isActive: Boolean
+
+  stockQuantity: Int
+
+  tags: [String!]
+}
+
+input UpdateProductInput {
+  categoryId: ID
+
+  name: String
+
+  description: String
+
+  price: Decimal
+
+  salePrice: Decimal
+
+  sku: String
+
+  images: [String!]
+
+  attributes: JSON
+
+  isActive: Boolean
+
+  stockQuantity: Int
+
+  tags: [String!]
+}
+
+input CreateProductVariantInput {
+  productId: ID!
+
+  name: String!
+
+  price: Decimal!
+
+  sku: String!
+
+  stockQuantity: Int!
+
+  attributes: JSON
+
+  isActive: Boolean
+}
+
+input UpdateProductVariantInput {
+  name: String
+
+  price: Decimal
+
+  sku: String
+
+  stockQuantity: Int
+
+  attributes: JSON
+
+  isActive: Boolean
+}
+
+input CreateOrderInput {
+  userId: ID!
+
+  orderNumber: String!
+
+  subtotal: Decimal!
+
+  taxAmount: Decimal
+
+  shippingAmount: Decimal
+
+  discountAmount: Decimal
+
+  totalAmount: Decimal!
+
+  currency: String
+
+  shippingAddressId: String
+
+  notes: String
+}
+
+input UpdateOrderInput {
+  status: OrderStatus
+
+  notes: String
+}
+
+input CreateOrderItemInput {
+  orderId: ID!
+
+  productId: ID!
+
+  quantity: Int!
+
+  unitPrice: Decimal!
+
+  totalPrice: Decimal!
+}
+
+input CreateSavedPaymentMethodInput {
+  userId: ID!
+
+  type: PaymentMethodType!
+
+  provider: String!
+
+  lastFour: String
+
+  expiryMonth: Int
+
+  expiryYear: Int
+
+  cardholderName: String
+
+  isDefault: Boolean
+
+  metadata: JSON
+}
+
+input UpdateSavedPaymentMethodInput {
+  isDefault: Boolean
+
+  isActive: Boolean
+
+  metadata: JSON
+}
+
+input CreatePaymentMethodInput {
+  orderId: ID!
+
+  type: PaymentMethodType!
+
+  amount: Decimal!
+
+  status: String!
+
+  transactionId: String
+
+  metadata: JSON
+}
+
+input UpdatePaymentMethodInput {
+  type: PaymentMethodType
+
+  amount: Decimal
+
+  status: String
+
+  transactionId: String
+
+  metadata: JSON
+}
+
+input CreateCouponInput {
+  code: String!
+
+  name: String!
+
+  description: String
+
+  discountType: DiscountType!
+
+  discountValue: Decimal!
+
+  minimumAmount: Decimal
+
+  maximumDiscount: Decimal
+
+  usageLimit: Int
+
+  validFrom: DateTime!
+
+  validUntil: DateTime!
+
+  isActive: Boolean
+
+  isFirstTimeOnly: Boolean
+
+  applicableCategories: [String!]
+
+  applicableProducts: [String!]
+}
+
+input UpdateCouponInput {
+  name: String
+
+  description: String
+
+  discountValue: Decimal
+
+  minimumAmount: Decimal
+
+  maximumDiscount: Decimal
+
+  usageLimit: Int
+
+  validFrom: DateTime
+
+  validUntil: DateTime
+
+  isActive: Boolean
+
+  isFirstTimeOnly: Boolean
+
+  applicableCategories: [String!]
+
+  applicableProducts: [String!]
+}
+
+input CreateProductReviewInput {
+  productId: ID!
+
+  userId: ID!
+
+  rating: Int!
+
+  title: String
+
+  comment: String
+}
+
+input UpdateProductReviewInput {
+  rating: Int
+
+  title: String
+
+  comment: String
+
+  isApproved: Boolean
+}
+
+input CreateReviewVoteInput {
+  reviewId: ID!
+
+  userId: ID!
+
+  isHelpful: Boolean!
+}
+
+input CreateInventoryTransactionInput {
+  productId: ID!
+
+  type: InventoryTransactionType!
+
+  quantity: Int!
+
+  reference: String
+
+  notes: String
+}
+
+input CreateStockAlertInput {
+  productId: ID!
+
+  type: StockAlertType!
+
+  threshold: Int!
+
+  currentStock: Int!
+
+  isActive: Boolean
+}
+
+input CreateCarrierInput {
+  name: String!
+
+  code: String!
+
+  trackingUrlTemplate: String
+
+  isActive: Boolean
+}
+
+input CreateShippingZoneInput {
+  name: String!
+
+  countries: [String!]!
+
+  states: [String!]!
+
+  cities: [String!]!
+
+  postalCodes: [String!]!
+
+  isActive: Boolean
+}
+
+input CreateShippingRateInput {
+  zoneId: ID!
+
+  name: String!
+
+  minWeight: Decimal
+
+  maxWeight: Decimal
+
+  price: Decimal!
+
+  isActive: Boolean
+}
+
+input CreatePushNotificationInput {
+  userId: ID!
+
+  title: String!
+
+  body: String!
+
+  type: NotificationType!
+
+  data: JSON
+}
+
+input CreateNotificationTemplateInput {
+  name: String!
+
+  type: NotificationType!
+
+  title: String!
+
+  body: String!
+
+  variables: [String!]!
+
+  isActive: Boolean
+}
+
+input ProductFilterInput {
+  categoryId: ID
+
+  isActive: Boolean
+
+  minPrice: Decimal
+
+  maxPrice: Decimal
+
+  inStock: Boolean
+
+  search: String
+
+  tags: [String!]
+
+  rating: Int
+}
+
+input OrderFilterInput {
+  userId: ID
+
+  status: OrderStatus
+
+  startDate: DateTime
+
+  endDate: DateTime
+
+  minAmount: Decimal
+
+  maxAmount: Decimal
+}
+
+input UserFilterInput {
+  role: UserRole
+
+  isActive: Boolean
+
+  search: String
+
+  emailVerified: Boolean
+}
+
+input UserOrderHistoryFilter {
+  status: OrderStatus
+
+  startDate: DateTime
+
+  endDate: DateTime
+
+  minAmount: Decimal
+
+  maxAmount: Decimal
+}
+
+input PaginationInput {
+  limit: Int = 10
+
+  offset: Int = 0
+}
+
+type PaginatedProducts {
+  products: [Product!]!
+
+  total: Int!
+
+  hasMore: Boolean!
+}
+
+type PaginatedOrders {
+  orders: [Order!]!
+
+  total: Int!
+
+  hasMore: Boolean!
+}
+
+type PaginatedUsers {
+  users: [User!]!
+
+  total: Int!
+
+  hasMore: Boolean!
+}
+
+type UserOrderHistoryResponse {
+  orders: [Order!]!
+
+  total: Int!
+
+  hasMore: Boolean!
+
+  stats: UserOrderHistoryStats!
+}
+
+type UserOrderHistoryStats {
+  totalOrders: Int!
+
+  totalSpent: Decimal!
+
+  averageOrderValue: Decimal!
+
+  lastOrderDate: DateTime
+
+  ordersByStatus: JSON!
+}
+
+type UserFavoriteStats {
+  totalFavorites: Int!
+
+  recentFavorites: [UserFavorite!]!
+
+  favoriteCategories: [String!]!
+}
+
+type UserActivitySummary {
+  recentOrders: [Order!]!
+
+  favoriteProducts: [Product!]!
+
+  cartItemsCount: Int!
+
+  totalSpent: Decimal!
+
+  joinDate: DateTime!
+
+  lastActivity: DateTime!
+}
+
+type ProductStats {
+  totalProducts: Int!
+
+  activeProducts: Int!
+
+  totalCategories: Int!
+}
+
+type OrderStats {
+  totalOrders: Int!
+
+  pendingOrders: Int!
+
+  processingOrders: Int!
+
+  shippedOrders: Int!
+
+  deliveredOrders: Int!
+
+  cancelledOrders: Int!
+
+  totalRevenue: Decimal!
+
+  averageOrderValue: Decimal!
+}
+
+type UserStats {
+  totalUsers: Int!
+
+  activeUsers: Int!
+
+  newUsersThisMonth: Int!
+
+  usersByRole: JSON!
+}
+
+type PaginatedReviews {
+  reviews: [ProductReview!]!
+
+  total: Int!
+
+  hasMore: Boolean!
+}
+
+type AuthResponse {
+  success: Boolean!
+
+  user: User
+
+  accessToken: String
+
+  refreshToken: String
+
+  message: String!
+}
+
+type SuccessResponse {
+  success: Boolean!
+
+  message: String!
+}
+
+type UploadResponse {
+  success: Boolean!
+
+  url: String
+
+  filename: String
+
+  message: String!
+}
+
+type DashboardMetrics {
+  totalUsers: Int!
+
+  totalProducts: Int!
+
+  totalOrders: Int!
+
+  totalRevenue: Decimal!
+
+  todayOrders: Int!
+
+  todayRevenue: Decimal!
+
+  pendingOrders: Int!
+
+  lowStockProducts: Int!
+
+  activeCoupons: Int!
+}
+
+type ProductAnalytics {
+  totalProducts: Int!
+
+  activeProducts: Int!
+
+  lowStockProducts: Int!
+
+  outOfStockProducts: Int!
+
+  averageRating: Decimal!
+
+  totalReviews: Int!
+
+  topSellingProducts: [Product!]!
+
+  topRatedProducts: [Product!]!
+}
+
+type OrderAnalytics {
+  totalOrders: Int!
+
+  totalRevenue: Decimal!
+
+  averageOrderValue: Decimal!
+
+  ordersByStatus: JSON!
+
+  revenueByMonth: JSON!
+
+  topCustomers: [UserProfile!]!
+}
+
+type UserAnalytics {
+  totalUsers: Int!
+
+  activeUsers: Int!
+
+  newUsersThisMonth: Int!
+
+  usersByRole: JSON!
+
+  topSpenders: [UserProfile!]!
+
+  userEngagement: JSON!
+}
+
+type Query {
+  health: String!
+
+  dashboardMetrics: DashboardMetrics!
+
+  productAnalytics: ProductAnalytics!
+
+  orderAnalytics: OrderAnalytics!
+
+  userAnalytics: UserAnalytics!
+
+  productStats: ProductStats!
+
+  orderStats: OrderStats!
+
+  userStats: UserStats!
+
+  users(filter: UserFilterInput, pagination: PaginationInput): PaginatedUsers!
+
+  user(id: ID!): User
+
+  userProfile(userId: ID!): UserProfile
+
+  userAddresses(userId: ID!): [UserAddress!]!
+
+  userAddress(id: ID!): UserAddress
+
+  currentUser: User
+
+  searchUsers(query: String!): [User!]!
+
+  activeUsers: [User!]!
+
+  usersByRole(role: UserRole!): [User!]!
+
+  usersByProvider(provider: AuthProvider!): [User!]!
+
+  userOrderHistory(userId: ID!, filter: UserOrderHistoryFilter, pagination: PaginationInput): UserOrderHistoryResponse!
+
+  userFavoriteStats(userId: ID!): UserFavoriteStats!
+
+  userActivitySummary(userId: ID!): UserActivitySummary!
+
+  userAccounts(userId: ID!): [UserAccount!]!
+
+  userSessions(userId: ID!): [UserSession!]!
+
+  activeSessions(userId: ID!): [UserSession!]!
+
+  userSessionAnalytics(userId: ID!): [UserSessionAnalytics!]!
+
+  categories: [Category!]!
+
+  category(id: ID!): Category
+
+  categoryBySlug(slug: String!): Category
+
+  products(filter: ProductFilterInput, pagination: PaginationInput): PaginatedProducts!
+
+  product(id: ID!): Product
+
+  productBySku(sku: String!): Product
+
+  productsByCategory(categoryId: ID!, pagination: PaginationInput): PaginatedProducts!
+
+  searchProducts(query: String!, filter: ProductFilterInput, pagination: PaginationInput): PaginatedProducts!
+
+  productVariants(productId: ID!): [ProductVariant!]!
+
+  productVariant(id: ID!): ProductVariant
+
+  userCart(userId: ID!): [ShoppingCart!]!
+
+  cartItem(id: ID!): ShoppingCart
+
+  userFavorites(userId: ID!): [UserFavorite!]!
+
+  isProductFavorited(userId: ID!, productId: ID!): Boolean!
+
+  orders(filter: OrderFilterInput, pagination: PaginationInput): PaginatedOrders!
+
+  order(id: ID!): Order
+
+  orderByNumber(orderNumber: String!): Order
+
+  userOrders(userId: ID!, pagination: PaginationInput): PaginatedOrders!
+
+  orderTracking(orderId: ID!): [OrderTracking!]!
+
+  orderItems(orderId: ID!): [OrderItem!]!
+
+  userPaymentMethods(userId: ID!): [PaymentMethod!]!
+
+  savedPaymentMethods(userId: ID!): [SavedPaymentMethod!]!
+
+  paymentMethod(id: ID!): PaymentMethod
+
+  userTransactions(userId: ID!): [Transaction!]!
+
+  orderTransactions(orderId: ID!): [Transaction!]!
+
+  transaction(id: ID!): Transaction
+
+  coupons: [Coupon!]!
+
+  coupon(id: ID!): Coupon
+
+  couponByCode(code: String!): Coupon
+
+  activeCoupons: [Coupon!]!
+
+  userCouponUsage(userId: ID!): [CouponUsage!]!
+
+  productReviews(productId: ID!, pagination: PaginationInput): PaginatedReviews!
+
+  userReviews(userId: ID!): [ProductReview!]!
+
+  review(id: ID!): ProductReview
+
+  reviewVotes(reviewId: ID!): [ReviewVote!]!
+
+  inventoryTransactions(productId: ID!): [InventoryTransaction!]!
+
+  stockAlerts: [StockAlert!]!
+
+  lowStockProducts: [Product!]!
+
+  outOfStockProducts: [Product!]!
+
+  carriers: [Carrier!]!
+
+  carrier(id: ID!): Carrier
+
+  shippingZones: [ShippingZone!]!
+
+  shippingZone(id: ID!): ShippingZone
+
+  shippingRates(zoneId: ID!): [ShippingRate!]!
+
+  deliverySlots: [DeliverySlot!]!
+
+  loyaltyPrograms: [LoyaltyProgram!]!
+
+  userRewardPoints(userId: ID!): [RewardPoint!]!
+
+  userRewardBalance(userId: ID!): Int!
+
+  userNotifications(userId: ID!): [PushNotification!]!
+
+  unreadNotifications(userId: ID!): [PushNotification!]!
+
+  notificationTemplates: [NotificationTemplate!]!
+
+  emailTemplates: [EmailTemplate!]!
+
+  newsletterSubscriptions: [NewsletterSubscription!]!
+
+  isSubscribedToNewsletter(email: String!): Boolean!
+
+  userAppEvents(userId: ID!): [AppEvent!]!
+
+  productAppEvents(productId: ID!): [AppEvent!]!
+
+  userAuditLogs(userId: ID!): [AuditLog!]!
+
+  userSecurityEvents(userId: ID!): [SecurityEvent!]!
+
+  storeSettings: [StoreSettings!]!
+
+  storeSetting(key: String!): StoreSettings
+
+  taxRates: [TaxRate!]!
+
+  taxRate(id: ID!): TaxRate
+
+  images(entityType: String, entityId: String): [Image!]!
+
+  image(id: ID!): Image
+}
+
+type Mutation {
+  registerUser(input: CreateUserProfileInput!): AuthResponse!
+
+  loginUser(email: String!, password: String!): AuthResponse!
+
+  logoutUser: SuccessResponse!
+
+  refreshToken(refreshToken: String!): AuthResponse!
+
+  createUser(input: CreateUserProfileInput!): User!
+
+  updateUser(id: ID!, input: UpdateUserInput!): User!
+
+  deleteUser(id: ID!): SuccessResponse!
+
+  activateUser(id: ID!): User!
+
+  deactivateUser(id: ID!): User!
+
+  updateUserPassword(userId: ID!, currentPassword: String!, newPassword: String!): SuccessResponse!
+
+  requestPasswordReset(email: String!): SuccessResponse!
+
+  resetPassword(token: String!, newPassword: String!): SuccessResponse!
+
+  revokeUserSession(sessionId: ID!): SuccessResponse!
+
+  revokeAllUserSessions(userId: ID!): SuccessResponse!
+
+  unlinkUserAccount(accountId: ID!): SuccessResponse!
+
+  forcePasswordReset(userId: ID!): SuccessResponse!
+
+  impersonateUser(userId: ID!): AuthResponse!
+
+  createUserProfile(input: CreateUserProfileInput!): UserProfile!
+
+  updateUserProfile(userId: ID!, input: UpdateUserProfileInput!): UserProfile!
+
+  deleteUserProfile(userId: ID!): SuccessResponse!
+
+  createUserAddress(input: CreateUserAddressInput!): UserAddress!
+
+  updateUserAddress(id: ID!, input: UpdateUserAddressInput!): UserAddress!
+
+  deleteUserAddress(id: ID!): SuccessResponse!
+
+  setDefaultAddress(userId: ID!, addressId: ID!): SuccessResponse!
+
+  createCategory(input: CreateCategoryInput!): Category!
+
+  updateCategory(id: ID!, input: UpdateCategoryInput!): Category!
+
+  deleteCategory(id: ID!): SuccessResponse!
+
+  createProduct(input: CreateProductInput!): Product!
+
+  updateProduct(id: ID!, input: UpdateProductInput!): Product!
+
+  deleteProduct(id: ID!): SuccessResponse!
+
+  createProductVariant(input: CreateProductVariantInput!): ProductVariant!
+
+  updateProductVariant(id: ID!, input: UpdateProductVariantInput!): ProductVariant!
+
+  deleteProductVariant(id: ID!): SuccessResponse!
+
+  addToCart(userId: ID!, productId: ID!, quantity: Int!): ShoppingCartItem!
+
+  updateCartItem(id: ID!, quantity: Int!): ShoppingCartItem!
+
+  removeFromCart(id: ID!): SuccessResponse!
+
+  clearUserCart(userId: ID!): SuccessResponse!
+
+  addToFavorites(userId: ID!, productId: ID!): UserFavorite!
+
+  removeFromFavorites(userId: ID!, productId: ID!): SuccessResponse!
+
+  toggleFavorite(userId: ID!, productId: ID!): UserFavorite!
+
+  createOrder(input: CreateOrderInput!): Order!
+
+  updateOrder(id: ID!, input: UpdateOrderInput!): Order!
+
+  updateOrderStatus(id: ID!, status: OrderStatus!): Order!
+
+  cancelOrder(id: ID!): Order!
+
+  shipOrder(id: ID!, trackingNumber: String): Order!
+
+  deliverOrder(id: ID!): Order!
+
+  createOrderItem(input: CreateOrderItemInput!): OrderItem!
+
+  updateOrderItem(id: ID!, quantity: Int!, unitPrice: Decimal!): OrderItem!
+
+  deleteOrderItem(id: ID!): SuccessResponse!
+
+  createSavedPaymentMethod(input: CreateSavedPaymentMethodInput!): SavedPaymentMethod!
+
+  updateSavedPaymentMethod(id: ID!, input: UpdateSavedPaymentMethodInput!): SavedPaymentMethod!
+
+  deleteSavedPaymentMethod(id: ID!): SuccessResponse!
+
+  createPaymentMethod(input: CreatePaymentMethodInput!): PaymentMethod!
+
+  updatePaymentMethod(id: ID!, input: UpdatePaymentMethodInput!): PaymentMethod!
+
+  deletePaymentMethod(id: ID!): SuccessResponse!
+
+  createCoupon(input: CreateCouponInput!): Coupon!
+
+  updateCoupon(id: ID!, input: UpdateCouponInput!): Coupon!
+
+  deleteCoupon(id: ID!): SuccessResponse!
+
+  applyCoupon(orderId: ID!, couponCode: String!): Order!
+
+  removeCoupon(orderId: ID!): Order!
+
+  createProductReview(input: CreateProductReviewInput!): ProductReview!
+
+  updateProductReview(id: ID!, input: UpdateProductReviewInput!): ProductReview!
+
+  deleteProductReview(id: ID!): SuccessResponse!
+
+  approveReview(id: ID!): ProductReview!
+
+  createReviewVote(input: CreateReviewVoteInput!): ReviewVote!
+
+  deleteReviewVote(reviewId: ID!, userId: ID!): SuccessResponse!
+
+  createInventoryTransaction(input: CreateInventoryTransactionInput!): InventoryTransaction!
+
+  createStockAlert(input: CreateStockAlertInput!): StockAlert!
+
+  updateStockAlert(id: ID!, isActive: Boolean!): StockAlert!
+
+  deleteStockAlert(id: ID!): SuccessResponse!
+
+  createCarrier(input: CreateCarrierInput!): Carrier!
+
+  updateCarrier(id: ID!, name: String, code: String, trackingUrlTemplate: String, isActive: Boolean): Carrier!
+
+  deleteCarrier(id: ID!): SuccessResponse!
+
+  createShippingZone(input: CreateShippingZoneInput!): ShippingZone!
+
+  createShippingRate(input: CreateShippingRateInput!): ShippingRate!
+
+  createPushNotification(input: CreatePushNotificationInput!): PushNotification!
+
+  markNotificationAsRead(id: ID!): PushNotification!
+
+  markAllNotificationsAsRead(userId: ID!): SuccessResponse!
+
+  createNotificationTemplate(input: CreateNotificationTemplateInput!): NotificationTemplate!
+
+  subscribeToNewsletter(email: String!, userId: String): NewsletterSubscription!
+
+  unsubscribeFromNewsletter(email: String!): SuccessResponse!
+
+  uploadImage(file: Upload!, entityType: String!, entityId: String!): UploadResponse!
+
+  bulkUpdateProducts(updates: [UpdateProductInput!]!): [Product!]!
+
+  bulkUpdateOrderStatus(orders: [ID!]!, status: OrderStatus!): [Order!]!
+}
+
+"""
+A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations.
+"""
+type __Schema {
+  description: String
+
+  """
+  A list of all types supported by this server.
+  """
+  types: [__Type!]!
+
+  """
+  The type that query operations will be rooted at.
+  """
+  queryType: __Type!
+
+  """
+  If this server supports mutation, the type that mutation operations will be rooted at.
+  """
+  mutationType: __Type
+
+  """
+  If this server support subscription, the type that subscription operations will be rooted at.
+  """
+  subscriptionType: __Type
+
+  """
+  A list of all directives supported by this server.
+  """
+  directives: [__Directive!]!
+}
+
+"""
+The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in GraphQL as represented by the `__TypeKind` enum.
+
+Depending on the kind of a type, certain fields describe information about that type. Scalar types provide no information beyond a name, description and optional `specifiedByURL`, while Enum types provide their values. Object and Interface types provide the fields they describe. Abstract types, Union and Interface, provide the Object types possible at runtime. List and NonNull types compose other types.
+"""
+type __Type {
+  kind: __TypeKind!
+
+  name: String
+
+  description: String
+
+  specifiedByURL: String
+
+  fields(includeDeprecated: Boolean = false): [__Field!]
+
+  interfaces: [__Type!]
+
+  possibleTypes: [__Type!]
+
+  enumValues(includeDeprecated: Boolean = false): [__EnumValue!]
+
+  inputFields(includeDeprecated: Boolean = false): [__InputValue!]
+
+  ofType: __Type
+
+  isOneOf: Boolean
+}
+
+"""
+An enum describing what kind of type a given `__Type` is.
+"""
+enum __TypeKind {
+  """
+  Indicates this type is a scalar.
+  """
+  SCALAR
+
+  """
+  Indicates this type is an object. `fields` and `interfaces` are valid fields.
+  """
+  OBJECT
+
+  """
+  Indicates this type is an interface. `fields`, `interfaces`, and `possibleTypes` are valid fields.
+  """
+  INTERFACE
+
+  """
+  Indicates this type is a union. `possibleTypes` is a valid field.
+  """
+  UNION
+
+  """
+  Indicates this type is an enum. `enumValues` is a valid field.
+  """
+  ENUM
+
+  """
+  Indicates this type is an input object. `inputFields` is a valid field.
+  """
+  INPUT_OBJECT
+
+  """
+  Indicates this type is a list. `ofType` is a valid field.
+  """
+  LIST
+
+  """
+  Indicates this type is a non-null. `ofType` is a valid field.
+  """
+  NON_NULL
+}
+
+"""
+Object and Interface types are described by a list of Fields, each of which has a name, potentially a list of arguments, and a return type.
+"""
+type __Field {
+  name: String!
+
+  description: String
+
+  args(includeDeprecated: Boolean = false): [__InputValue!]!
+
+  type: __Type!
+
+  isDeprecated: Boolean!
+
+  deprecationReason: String
+}
+
+"""
+Arguments provided to Fields or Directives and the input fields of an InputObject are represented as Input Values which describe their type and optionally a default value.
+"""
+type __InputValue {
+  name: String!
+
+  description: String
+
+  type: __Type!
+
+  """
+  A GraphQL-formatted string representing the default value for this input value.
+  """
+  defaultValue: String
+
+  isDeprecated: Boolean!
+
+  deprecationReason: String
+}
+
+"""
+One possible value for a given Enum. Enum values are unique values, not a placeholder for a string or numeric value. However an Enum value is returned in a JSON response as a string.
+"""
+type __EnumValue {
+  name: String!
+
+  description: String
+
+  isDeprecated: Boolean!
+
+  deprecationReason: String
+}
+
+"""
+A Directive provides a way to describe alternate runtime execution and type validation behavior in a GraphQL document.
+
+In some cases, you need to provide options to alter GraphQL's execution behavior in ways field arguments will not suffice, such as conditionally including or skipping a field. Directives provide this by describing additional information to the executor.
+"""
+type __Directive {
+  name: String!
+
+  description: String
+
+  isRepeatable: Boolean!
+
+  locations: [__DirectiveLocation!]!
+
+  args(includeDeprecated: Boolean = false): [__InputValue!]!
+}
+
+"""
+A Directive can be adjacent to many parts of the GraphQL language, a __DirectiveLocation describes one such possible adjacencies.
+"""
+enum __DirectiveLocation {
+  """
+  Location adjacent to a query operation.
+  """
+  QUERY
+
+  """
+  Location adjacent to a mutation operation.
+  """
+  MUTATION
+
+  """
+  Location adjacent to a subscription operation.
+  """
+  SUBSCRIPTION
+
+  """
+  Location adjacent to a field.
+  """
+  FIELD
+
+  """
+  Location adjacent to a fragment definition.
+  """
+  FRAGMENT_DEFINITION
+
+  """
+  Location adjacent to a fragment spread.
+  """
+  FRAGMENT_SPREAD
+
+  """
+  Location adjacent to an inline fragment.
+  """
+  INLINE_FRAGMENT
+
+  """
+  Location adjacent to a variable definition.
+  """
+  VARIABLE_DEFINITION
+
+  """
+  Location adjacent to a schema definition.
+  """
+  SCHEMA
+
+  """
+  Location adjacent to a scalar definition.
+  """
+  SCALAR
+
+  """
+  Location adjacent to an object type definition.
+  """
+  OBJECT
+
+  """
+  Location adjacent to a field definition.
+  """
+  FIELD_DEFINITION
+
+  """
+  Location adjacent to an argument definition.
+  """
+  ARGUMENT_DEFINITION
+
+  """
+  Location adjacent to an interface definition.
+  """
+  INTERFACE
+
+  """
+  Location adjacent to a union definition.
+  """
+  UNION
+
+  """
+  Location adjacent to an enum definition.
+  """
+  ENUM
+
+  """
+  Location adjacent to an enum value definition.
+  """
+  ENUM_VALUE
+
+  """
+  Location adjacent to an input object type definition.
+  """
+  INPUT_OBJECT
+
+  """
+  Location adjacent to an input object field definition.
+  """
+  INPUT_FIELD_DEFINITION
+}
+
+"""
+Directs the executor to include this field or fragment only when the `if` argument is true.
+"""
+directive @include ("Included when true." if: Boolean!) on FIELD|FRAGMENT_SPREAD|INLINE_FRAGMENT
+
+"""
+Directs the executor to skip this field or fragment when the `if` argument is true.
+"""
+directive @skip ("Skipped when true." if: Boolean!) on FIELD|FRAGMENT_SPREAD|INLINE_FRAGMENT
+
+"""
+Marks an element of a GraphQL schema as no longer supported.
+"""
+directive @deprecated ("Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax, as specified by [CommonMark](https://commonmark.org/)." reason: String = "No longer supported") on FIELD_DEFINITION|ARGUMENT_DEFINITION|INPUT_FIELD_DEFINITION|ENUM_VALUE
+
+"""
+Exposes a URL that specifies the behavior of this scalar.
+"""
+directive @specifiedBy ("The URL that specifies the behavior of this scalar." url: String!) on SCALAR
+
+"""
+Indicates exactly one field must be supplied and this field must not be `null`.
+"""
+directive @oneOf on INPUT_OBJECT
+
+schema {
+  query: Query
+  mutation: Mutation
+}

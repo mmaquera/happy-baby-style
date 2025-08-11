@@ -1,0 +1,28 @@
+# Cart Mutations
+# These mutations handle shopping cart operations
+
+mutation AddToCart($userId: ID!, $productId: ID!, $quantity: Int!) {
+  addToCart(userId: $userId, productId: $productId, quantity: $quantity) {
+    ...CartItemBasicInfo
+  }
+}
+
+mutation UpdateCartItem($id: ID!, $quantity: Int!) {
+  updateCartItem(id: $id, quantity: $quantity) {
+    ...CartItemBasicInfo
+  }
+}
+
+mutation RemoveFromCart($id: ID!) {
+  removeFromCart(id: $id) {
+    success
+    message
+  }
+}
+
+mutation ClearUserCart($userId: ID!) {
+  clearUserCart(userId: $userId) {
+    success
+    message
+  }
+}

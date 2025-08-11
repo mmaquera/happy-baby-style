@@ -1,35 +1,20 @@
-# Queries para categorías - Happy Baby Style GraphQL
+# Category Queries
+# These queries handle category data retrieval
 
-# Fragment para información de categoría
-fragment CategoryInfo on Category {
-    id
-    name
-    description
-    slug
-    imageUrl
-    isActive
-    sortOrder
-    createdAt
-    updatedAt
-}
-
-# Query para obtener todas las categorías
 query GetCategories {
-    categories {
-        ...CategoryInfo
-    }
+  categories {
+    ...CategoryBasicInfo
+  }
 }
 
-# Query para obtener una categoría por ID
 query GetCategory($id: ID!) {
-    category(id: $id) {
-        ...CategoryInfo
-    }
+  category(id: $id) {
+    ...CategoryBasicInfo
+  }
 }
 
-# Query para obtener una categoría por slug
 query GetCategoryBySlug($slug: String!) {
-    categoryBySlug(slug: $slug) {
-        ...CategoryInfo
-    }
+  categoryBySlug(slug: $slug) {
+    ...CategoryBasicInfo
+  }
 }

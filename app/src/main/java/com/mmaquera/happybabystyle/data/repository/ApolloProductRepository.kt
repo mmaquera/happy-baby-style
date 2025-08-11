@@ -1,33 +1,23 @@
 package com.mmaquera.happybabystyle.data.repository
 
-import com.mmaquera.happybabystyle.data.network.ApolloGraphQLClient
-import com.mmaquera.happybabystyle.domain.model.Product
-import com.mmaquera.happybabystyle.domain.model.Category
-import com.mmaquera.happybabystyle.domain.model.PaginatedResult
-import com.mmaquera.happybabystyle.domain.repository.ProductRepository
-import com.mmaquera.happybabystyle.graphql.GetProductsQuery
-import com.mmaquera.happybabystyle.graphql.GetProductQuery
-import com.mmaquera.happybabystyle.graphql.GetCategoriesQuery
-import com.mmaquera.happybabystyle.graphql.GetProductsByCategoryQuery
-import com.mmaquera.happybabystyle.graphql.fragment.ProductInfo
-import com.mmaquera.happybabystyle.graphql.fragment.CategoryInfo
-import com.mmaquera.happybabystyle.graphql.type.PaginationInput
-import com.apollographql.apollo3.api.Optional
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.catch
 /**
  * Repositorio de productos usando Apollo GraphQL
  * Implementa Clean Architecture con código generado type-safe
  * 
- * Características:
- * - Código generado type-safe por Apollo
- * - Cache automático
- * - Optimistic updates
- * - Error handling robusto
+ * Responsabilidad única: Coordinación de operaciones de productos
+ * - Delega construcción de queries al QueryBuilder
+ * - Delega mapeo de respuestas al ResponseMapper
+ * - Delega filtrado al FilterMapper
+ * - Delega manejo de errores al ErrorMapper
  */
+/*
 class ApolloProductRepository(
-    private val apolloClient: ApolloGraphQLClient
+    private val apolloClient: ApolloGraphQLClient,
+    private val productMapper: ProductMapper,
+    private val filterMapper: FilterMapper,
+    private val errorMapper: ErrorMapper,
+    private val queryBuilder: QueryBuilder,
+    private val responseMapper: ResponseMapper
 ) : ProductRepository {
     
     override suspend fun getProducts(
@@ -40,37 +30,33 @@ class ApolloProductRepository(
         offset: Int
     ): Flow<Result<PaginatedResult<Product>>> = flow {
         try {
-            val paginationInput = PaginationInput(
-                limit = Optional.present(limit),
-                offset = Optional.present(offset)
-            )
+            // Construir query usando el builder
+            val query = queryBuilder.buildGetProductsQuery(limit, offset)
             
-            val query = GetProductsQuery(
-                pagination = Optional.present(paginationInput)
-            )
-            
+            // Ejecutar query
             val response = apolloClient.getClient().query(query).execute()
             
-            if (response.hasErrors()) {
-                val errorMessage = response.errors?.firstOrNull()?.message ?: "Error desconocido"
+            // Verificar errores usando el error mapper
+            if (errorMapper.hasErrors(response)) {
+                val errorMessage = errorMapper.getErrorMessage(response)
                 emit(Result.failure(Exception(errorMessage)))
             } else {
-                val productsData = response.data?.products
-                if (productsData != null) {
-                    val products = productsData.products?.mapNotNull { productData ->
-                        productData?.productInfo?.let { mapToProduct(it) }
-                    } ?: emptyList()
-                    
-                    // Aplicar filtros manualmente por ahora
-                    val filteredProducts = applyFilters(products, categoryId, searchQuery, minPrice, maxPrice, inStock)
-                    
-                    val paginatedResult = PaginatedResult(
-                        items = filteredProducts,
-                        total = productsData.total,
-                        hasMore = productsData.hasMore
+                // Mapear respuesta usando el response mapper
+                val paginatedResult = responseMapper.mapProductsResponse(response.data)
+                
+                if (paginatedResult != null) {
+                    // Aplicar filtros usando el filter mapper
+                    val filteredProducts = filterMapper.applyFilters(
+                        paginatedResult.items, 
+                        categoryId, 
+                        searchQuery, 
+                        minPrice, 
+                        maxPrice, 
+                        inStock
                     )
                     
-                    emit(Result.success(paginatedResult))
+                    val finalResult = paginatedResult.copy(items = filteredProducts)
+                    emit(Result.success(finalResult))
                 } else {
                     emit(Result.failure(Exception("No se encontraron datos de productos")))
                 }
@@ -84,16 +70,19 @@ class ApolloProductRepository(
     
     override suspend fun getProductById(productId: String): Flow<Result<Product?>> = flow {
         try {
-            val query = GetProductQuery(id = productId)
+            // Construir query usando el builder
+            val query = queryBuilder.buildGetProductQuery(productId)
             
+            // Ejecutar query
             val response = apolloClient.getClient().query(query).execute()
             
-            if (response.hasErrors()) {
-                val errorMessage = response.errors?.firstOrNull()?.message ?: "Error desconocido"
+            // Verificar errores usando el error mapper
+            if (errorMapper.hasErrors(response)) {
+                val errorMessage = errorMapper.getErrorMessage(response)
                 emit(Result.failure(Exception(errorMessage)))
             } else {
-                val productData = response.data?.product?.productInfo
-                val product = productData?.let { mapToProduct(it) }
+                // Mapear respuesta usando el response mapper
+                val product = responseMapper.mapProductResponse(response.data)
                 emit(Result.success(product))
             }
         } catch (e: Exception) {
@@ -109,34 +98,21 @@ class ApolloProductRepository(
         offset: Int
     ): Flow<Result<PaginatedResult<Product>>> = flow {
         try {
-            val paginationInput = PaginationInput(
-                limit = Optional.present(limit),
-                offset = Optional.present(offset)
-            )
+            // Construir query usando el builder
+            val query = queryBuilder.buildGetProductsByCategoryQuery(categoryId, limit, offset)
             
-            val query = GetProductsByCategoryQuery(
-                categoryId = categoryId,
-                pagination = Optional.present(paginationInput)
-            )
-            
+            // Ejecutar query
             val response = apolloClient.getClient().query(query).execute()
             
-            if (response.hasErrors()) {
-                val errorMessage = response.errors?.firstOrNull()?.message ?: "Error desconocido"
+            // Verificar errores usando el error mapper
+            if (errorMapper.hasErrors(response)) {
+                val errorMessage = errorMapper.getErrorMessage(response)
                 emit(Result.failure(Exception(errorMessage)))
             } else {
-                val productsData = response.data?.productsByCategory
-                if (productsData != null) {
-                    val products = productsData.products?.mapNotNull { productData ->
-                        productData?.productInfo?.let { mapToProduct(it) }
-                    } ?: emptyList()
-                    
-                    val paginatedResult = PaginatedResult(
-                        items = products,
-                        total = productsData.total,
-                        hasMore = productsData.hasMore
-                    )
-                    
+                // Mapear respuesta usando el response mapper
+                val paginatedResult = responseMapper.mapProductsByCategoryResponse(response.data)
+                
+                if (paginatedResult != null) {
                     emit(Result.success(paginatedResult))
                 } else {
                     emit(Result.failure(Exception("No se encontraron productos para la categoría")))
@@ -151,19 +127,19 @@ class ApolloProductRepository(
     
     override suspend fun getCategories(): Flow<Result<List<Category>>> = flow {
         try {
-            val query = GetCategoriesQuery()
+            // Construir query usando el builder
+            val query = queryBuilder.buildGetCategoriesQuery()
             
+            // Ejecutar query
             val response = apolloClient.getClient().query(query).execute()
             
-            if (response.hasErrors()) {
-                val errorMessage = response.errors?.firstOrNull()?.message ?: "Error desconocido"
+            // Verificar errores usando el error mapper
+            if (errorMapper.hasErrors(response)) {
+                val errorMessage = errorMapper.getErrorMessage(response)
                 emit(Result.failure(Exception(errorMessage)))
             } else {
-                val categoriesData = response.data?.categories
-                val categories = categoriesData?.mapNotNull { categoryData ->
-                    categoryData?.categoryInfo?.let { mapToCategory(it) }
-                } ?: emptyList()
-                
+                // Mapear respuesta usando el response mapper
+                val categories = responseMapper.mapCategoriesResponse(response.data)
                 emit(Result.success(categories))
             }
         } catch (e: Exception) {
@@ -172,96 +148,4 @@ class ApolloProductRepository(
     }.catch { exception ->
         emit(Result.failure(exception))
     }
-    
-    // ===== FUNCIONES DE MAPPING =====
-    
-    private fun mapToProduct(productInfo: ProductInfo): Product {
-        return Product(
-            id = productInfo.id,
-            name = productInfo.name,
-            description = productInfo.description ?: "",
-            price = productInfo.price.toDouble(),
-            salePrice = productInfo.salePrice?.toDouble(),
-            sku = productInfo.sku,
-            images = productInfo.images,
-            tags = productInfo.tags,
-            isActive = productInfo.isActive,
-            stockQuantity = productInfo.stockQuantity,
-            rating = productInfo.rating.toFloat(),
-            reviewCount = productInfo.reviewCount,
-            createdAt = productInfo.createdAt,
-            updatedAt = productInfo.updatedAt,
-            currentPrice = productInfo.currentPrice.toDouble(),
-            hasDiscount = productInfo.hasDiscount,
-            discountPercentage = productInfo.discountPercentage,
-            totalStock = productInfo.totalStock,
-            isInStock = productInfo.isInStock,
-            category = productInfo.category?.let { mapToCategory(it) }
-        )
-    }
-    
-    private fun mapToCategory(categoryInfo: ProductInfo.Category): Category {
-        return Category(
-            id = categoryInfo.id,
-            name = categoryInfo.name,
-            description = "", // No disponible en ProductInfo.Category
-            slug = categoryInfo.slug,
-            imageUrl = categoryInfo.imageUrl,
-            isActive = true, // Asumir activo por defecto
-            sortOrder = 0, // No disponible
-            createdAt = null, // No disponible
-            updatedAt = null // No disponible
-        )
-    }
-    
-    private fun mapToCategory(categoryInfo: CategoryInfo): Category {
-        return Category(
-            id = categoryInfo.id,
-            name = categoryInfo.name,
-            description = categoryInfo.description ?: "",
-            slug = categoryInfo.slug,
-            imageUrl = categoryInfo.imageUrl,
-            isActive = categoryInfo.isActive,
-            sortOrder = categoryInfo.sortOrder,
-            createdAt = categoryInfo.createdAt,
-            updatedAt = categoryInfo.updatedAt
-        )
-    }
-    
-    /**
-     * Aplica filtros manuales a la lista de productos
-     * Implementación temporal hasta que se implementen filtros en el servidor
-     */
-    private fun applyFilters(
-        products: List<Product>,
-        categoryId: String?,
-        searchQuery: String?,
-        minPrice: Double?,
-        maxPrice: Double?,
-        inStock: Boolean?
-    ): List<Product> {
-        return products.filter { product ->
-            // Filtro por categoría
-            if (categoryId != null && product.category?.id != categoryId) return@filter false
-            
-            // Filtro por búsqueda
-            if (searchQuery != null) {
-                val query = searchQuery.lowercase()
-                val matchesName = product.name.lowercase().contains(query)
-                val matchesDescription = product.description?.lowercase()?.contains(query) ?: false
-                if (!matchesName && !matchesDescription) return@filter false
-            }
-            
-            // Filtro por precio mínimo
-            if (minPrice != null && product.currentPrice < minPrice) return@filter false
-            
-            // Filtro por precio máximo
-            if (maxPrice != null && product.currentPrice > maxPrice) return@filter false
-            
-            // Filtro por stock
-            if (inStock == true && !product.isInStock) return@filter false
-            
-            true
-        }
-    }
-} 
+} */

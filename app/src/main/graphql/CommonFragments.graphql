@@ -1,0 +1,94 @@
+# Common Fragments
+# These fragments define reusable field selections for GraphQL queries
+
+fragment ProductBasicInfo on Product {
+  id
+  name
+  description
+  price
+  sku
+  categoryId
+  images
+  isActive
+  stockQuantity
+  createdAt
+  updatedAt
+}
+
+fragment CategoryBasicInfo on Category {
+  id
+  name
+  slug
+  description
+  image
+  isActive
+  sortOrder
+  createdAt
+  updatedAt
+}
+
+fragment UserBasicInfo on User {
+  id
+  email
+  isActive
+  createdAt
+  updatedAt
+}
+
+fragment UserProfileBasicInfo on UserProfile {
+  id
+  firstName
+  lastName
+  phone
+  dateOfBirth
+  createdAt
+  updatedAt
+}
+
+fragment CartItemBasicInfo on ShoppingCartItem {
+  id
+  cartId
+  productId
+  quantity
+  price
+  createdAt
+  updatedAt
+  product {
+    ...ProductBasicInfo
+  }
+}
+
+fragment OrderBasicInfo on Order {
+  id
+  userId
+  orderNumber
+  status
+  subtotal
+  taxAmount
+  shippingAmount
+  discountAmount
+  totalAmount
+  currency
+  createdAt
+  updatedAt
+}
+
+fragment OrderItemBasicInfo on OrderItem {
+  id
+  orderId
+  productId
+  quantity
+  unitPrice
+  totalPrice
+  createdAt
+}
+
+fragment FavoriteBasicInfo on UserFavorite {
+  id
+  userId
+  productId
+  createdAt
+  product {
+    ...ProductBasicInfo
+  }
+}

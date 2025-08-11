@@ -1,0 +1,21 @@
+# Category Mutations
+# These mutations handle category operations
+
+mutation CreateCategory($input: CreateCategoryInput!) {
+  createCategory(input: $input) {
+    ...CategoryBasicInfo
+  }
+}
+
+mutation UpdateCategory($id: ID!, $input: UpdateCategoryInput!) {
+  updateCategory(id: $id, input: $input) {
+    ...CategoryBasicInfo
+  }
+}
+
+mutation DeleteCategory($id: ID!) {
+  deleteCategory(id: $id) {
+    success
+    message
+  }
+}

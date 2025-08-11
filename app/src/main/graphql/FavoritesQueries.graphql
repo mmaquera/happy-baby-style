@@ -1,90 +1,12 @@
-# Queries y mutations para favoritos - Happy Baby Style GraphQL
+# Favorites Queries
+# These queries handle favorites data retrieval
 
-# Fragment para favoritos de usuario
-fragment UserFavoriteInfo on UserFavorite {
-    id
-    userId
-    productId
-    createdAt
-    user {
-        id
-        userId
-        firstName
-        lastName
-    }
-    product {
-        id
-        name
-        price
-        currentPrice
-        images
-        hasDiscount
-        discountPercentage
-        isInStock
-        rating
-        reviewCount
-        category {
-            id
-            name
-            slug
-        }
-    }
-}
-
-# Fragment para estadísticas de favoritos
-fragment FavoriteCategoryStatsInfo on FavoriteCategoryStats {
-    categoryId
-    categoryName
-    count
-}
-
-# Query para obtener favoritos del usuario
 query GetUserFavorites($userId: ID!) {
-    userFavorites(userId: $userId) {
-        ...UserFavoriteInfo
-    }
+  userFavorites(userId: $userId) {
+    ...FavoriteBasicInfo
+  }
 }
 
-# Query para verificar si un producto está en favoritos
 query IsProductFavorited($userId: ID!, $productId: ID!) {
-    isProductFavorited(userId: $userId, productId: $productId)
-}
-
-# Query para obtener estadísticas de favoritos del usuario
-query GetUserFavoriteStats($userId: ID!) {
-    userFavoriteStats(userId: $userId) {
-        totalFavorites
-        recentFavorites {
-            ...UserFavoriteInfo
-        }
-        favoriteCategories {
-            ...FavoriteCategoryStatsInfo
-        }
-    }
-}
-
-# Mutation para agregar a favoritos
-mutation AddToFavorites($input: AddToFavoritesInput!) {
-    addToFavorites(input: $input) {
-        ...UserFavoriteInfo
-    }
-}
-
-# Mutation para remover de favoritos
-mutation RemoveFromFavorites($userId: ID!, $productId: ID!) {
-    removeFromFavorites(userId: $userId, productId: $productId) {
-        success
-        message
-    }
-}
-
-# Mutation para toggle favorito (agregar/remover)
-mutation ToggleFavorite($userId: ID!, $productId: ID!) {
-    toggleFavorite(userId: $userId, productId: $productId) {
-        action
-        favorite {
-            ...UserFavoriteInfo
-        }
-        message
-    }
+  isProductFavorited(userId: $userId, productId: $productId)
 }

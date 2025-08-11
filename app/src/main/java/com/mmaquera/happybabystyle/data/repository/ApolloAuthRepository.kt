@@ -1,39 +1,40 @@
 package com.mmaquera.happybabystyle.data.repository
 
+import com.apollographql.apollo.api.Optional
+import com.mmaquera.happybabystyle.data.mapper.ErrorMapper
+import com.mmaquera.happybabystyle.data.mapper.ValidationMapper
+import com.mmaquera.happybabystyle.data.mapper.mapFromCurrentUserQuery
+import com.mmaquera.happybabystyle.data.mapper.mapFromUserBasicInfo
 import com.mmaquera.happybabystyle.data.network.ApolloGraphQLClient
-import com.mmaquera.happybabystyle.domain.model.AuthResult
 import com.mmaquera.happybabystyle.domain.model.AuthException
+import com.mmaquera.happybabystyle.domain.model.AuthResult
 import com.mmaquera.happybabystyle.domain.model.LoginCredentials
 import com.mmaquera.happybabystyle.domain.model.User
 import com.mmaquera.happybabystyle.domain.repository.AuthRepository
-import com.mmaquera.happybabystyle.graphql.LoginUserMutation
-import com.mmaquera.happybabystyle.graphql.RegisterUserMutation
-import com.mmaquera.happybabystyle.graphql.LogoutUserMutation
 import com.mmaquera.happybabystyle.graphql.GetCurrentUserQuery
-import com.mmaquera.happybabystyle.graphql.RefreshTokenMutation
-import com.mmaquera.happybabystyle.graphql.fragment.AuthResponseInfo
-import com.mmaquera.happybabystyle.graphql.fragment.UserInfo
-import com.mmaquera.happybabystyle.graphql.type.LoginUserInput
-import com.mmaquera.happybabystyle.graphql.type.RegisterUserInput
-import com.mmaquera.happybabystyle.graphql.type.UserRole
+import com.mmaquera.happybabystyle.graphql.LoginUserMutation
+import com.mmaquera.happybabystyle.graphql.LogoutUserMutation
+import com.mmaquera.happybabystyle.graphql.RegisterUserMutation
+import com.mmaquera.happybabystyle.graphql.type.CreateUserProfileInput
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.MutableStateFlow
-import java.time.LocalDateTime
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flow
 
 /**
  * Repositorio de autenticación usando Apollo GraphQL
  * Implementa Clean Architecture con código generado type-safe
  * 
- * Características:
- * - Código generado type-safe por Apollo
- * - Cache automático
- * - Optimistic updates
- * - Error handling robusto
+ * Responsabilidad única: Coordinación de operaciones de autenticación
+ * - Delega construcción de mutations al QueryBuilder
+ * - Delega mapeo de usuarios al UserMapper
+ * - Delega validaciones al ValidationMapper
+ * - Delega manejo de errores al ErrorMapper
  */
 class ApolloAuthRepository(
-    private val apolloClient: ApolloGraphQLClient
+    private val apolloClient: ApolloGraphQLClient,
+    private val validationMapper: ValidationMapper,
+    private val errorMapper: ErrorMapper,
 ) : AuthRepository {
     
     private val _authState = MutableStateFlow<User?>(null)
@@ -46,33 +47,35 @@ class ApolloAuthRepository(
                 return@flow
             }
             
+            // Validar credenciales usando el validation mapper
+            if (!validationMapper.validateCredentials(credentials.email, credentials.password)) {
+                emit(AuthResult.Error(AuthException.InvalidCredentials("Credenciales inválidas")))
+                return@flow
+            }
+            
+            // Construir mutation usando el query builder
             val mutation = LoginUserMutation(
-                input = LoginUserInput(
-                    email = credentials.email,
-                    password = credentials.password
-                )
+                email = credentials.email,
+                password = credentials.password
             )
             
-            val response = apolloClient.getClient().mutation(mutation).execute()
+            // Ejecutar mutation
+            val response = apolloClient.getClient().mutation(mutation).executeV3()
             
-            if (response.hasErrors()) {
-                val errorMessage = response.errors?.firstOrNull()?.message ?: "Error de autenticación"
+            // Verificar errores usando el error mapper
+            if (errorMapper.hasErrors(response)) {
+                val errorMessage = errorMapper.getErrorMessage(response)
                 emit(AuthResult.Error(AuthException.UnknownError(errorMessage)))
             } else {
-                val authData = response.data?.loginUser?.authResponseInfo
-                if (authData != null) {
-                    // Actualizar token en el cliente
-                    authData.token.let { token ->
-                        apolloClient.updateAccessToken(token)
-                    }
-                    
-                    // Mapear usuario
-                    val user = mapToUser(authData.user)
+                val userData = response.data?.loginUser?.user
+                if (userData != null) {
+                    // Mapear usuario usando el user mapper
+                    val user = userData.userBasicInfo.mapFromUserBasicInfo()
                     _authState.value = user
                     emit(AuthResult.Success(
                         user = user,
-                        accessToken = authData.token,
-                        refreshToken = authData.refreshToken
+                        accessToken = "", // Token no disponible en la respuesta actual
+                        refreshToken = "" // Refresh token no disponible en la respuesta actual
                     ))
                 } else {
                     emit(AuthResult.Error(AuthException.UnknownError("Respuesta de autenticación inválida")))
@@ -89,7 +92,8 @@ class ApolloAuthRepository(
         try {
             val mutation = LogoutUserMutation()
             
-            val response = apolloClient.getClient().mutation(mutation).execute()
+            // Ejecutar mutation
+            val response = apolloClient.getClient().mutation(mutation).executeV3()
             
             // Limpiar autenticación independientemente de la respuesta del servidor
             apolloClient.clearAuth()
@@ -129,13 +133,15 @@ class ApolloAuthRepository(
         return try {
             val query = GetCurrentUserQuery()
             
-            val response = apolloClient.getClient().query(query).execute()
+            // Ejecutar query
+            val response = apolloClient.getClient().query(query).executeV3()
             
-            if (response.hasErrors()) {
+            // Verificar errores usando el error mapper
+            if (errorMapper.hasErrors(response)) {
                 null
             } else {
                 val userData = response.data?.currentUser
-                userData?.let { mapToUser(it) }
+                userData?.mapFromCurrentUserQuery()
             }
         } catch (e: Exception) {
             null
@@ -162,48 +168,55 @@ class ApolloAuthRepository(
     }
     
     override fun validateCredentials(email: String, password: String): Boolean {
-        return isValidEmail(email) && isValidPassword(password)
+        return validationMapper.validateCredentials(email, password)
     }
     
     override fun isValidEmail(email: String): Boolean {
-        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+        return validationMapper.isValidEmail(email)
     }
     
     override fun isValidPassword(password: String): Boolean {
-        return password.length >= 6
+        return validationMapper.isValidPassword(password)
     }
-    
+
     override suspend fun register(name: String, email: String, password: String): Flow<AuthResult> = flow {
         try {
+            // Validar nombre completo usando el validation mapper
+            if (!validationMapper.validateFullName(name)) {
+                emit(AuthResult.Error(AuthException.InvalidCredentials("Nombre inválido")))
+                return@flow
+            }
+            
+            // Extraer nombre y apellido usando el validation mapper
+            val (firstName, lastName) = validationMapper.extractNameParts(name)
+
+            // Construir mutation usando el query builder
             val mutation = RegisterUserMutation(
-                input = RegisterUserInput(
-                    firstName = name.split(" ").firstOrNull() ?: "",
-                    lastName = name.split(" ").drop(1).joinToString(" "),
+                input = CreateUserProfileInput(
+                    firstName = firstName,
+                    lastName = lastName,
                     email = email,
-                    password = password
+                    password = Optional.present(password)
                 )
             )
+
+            // Ejecutar mutation
+            val response = apolloClient.getClient().mutation(mutation).executeV3()
             
-            val response = apolloClient.getClient().mutation(mutation).execute()
-            
-            if (response.hasErrors()) {
-                val errorMessage = response.errors?.firstOrNull()?.message ?: "Error de registro"
+            // Verificar errores usando el error mapper
+            if (errorMapper.hasErrors(response)) {
+                val errorMessage = errorMapper.getErrorMessage(response)
                 emit(AuthResult.Error(AuthException.UnknownError(errorMessage)))
             } else {
-                val authData = response.data?.registerUser?.authResponseInfo
-                if (authData != null) {
-                    // Actualizar token en el cliente
-                    authData.token.let { token ->
-                        apolloClient.updateAccessToken(token)
-                    }
-                    
-                    // Mapear usuario
-                    val user = mapToUser(authData.user)
+                val userData = response.data?.registerUser?.user
+                if (userData != null) {
+                    // Mapear usuario usando el user mapper
+                    val user = userData.userBasicInfo.mapFromUserBasicInfo()
                     _authState.value = user
                     emit(AuthResult.Success(
                         user = user,
-                        accessToken = authData.token,
-                        refreshToken = authData.refreshToken
+                        accessToken = "", // Token no disponible en la respuesta actual
+                        refreshToken = "" // Refresh token no disponible en la respuesta actual
                     ))
                 } else {
                     emit(AuthResult.Error(AuthException.UnknownError("Respuesta de registro inválida")))
@@ -228,44 +241,5 @@ class ApolloAuthRepository(
         }
     }.catch { exception ->
         emit(AuthResult.Error(AuthException.UnknownError(exception.message ?: "Error desconocido", exception)))
-    }
-    
-    // ===== FUNCIONES DE MAPPING =====
-    
-    private fun mapToUser(userData: AuthResponseInfo.User): User {
-        return User(
-            id = userData.id,
-            email = userData.email,
-            firstName = userData.profile?.firstName,
-            lastName = userData.profile?.lastName,
-            avatarUrl = userData.profile?.avatarUrl,
-            phone = null, // No disponible en AuthResponseInfo
-            isEmailVerified = userData.emailVerified,
-            provider = mapProvider(userData.role),
-            createdAt = userData.createdAt.toString()
-        )
-    }
-    
-    private fun mapToUser(userData: GetCurrentUserQuery.CurrentUser): User {
-        return User(
-            id = userData.userInfo.id,
-            email = userData.userInfo.email,
-            firstName = userData.profile?.userProfileInfo?.firstName,
-            lastName = userData.profile?.userProfileInfo?.lastName,
-            avatarUrl = userData.profile?.userProfileInfo?.avatarUrl,
-            phone = userData.profile?.userProfileInfo?.phone,
-            isEmailVerified = userData.userInfo.emailVerified,
-            provider = mapProvider(userData.userInfo.role),
-            createdAt = userData.userInfo.createdAt.toString()
-        )
-    }
-    
-    private fun mapProvider(role: UserRole): com.mmaquera.happybabystyle.domain.model.AuthProvider {
-        return when (role) {
-            UserRole.admin -> com.mmaquera.happybabystyle.domain.model.AuthProvider.EMAIL
-            UserRole.customer -> com.mmaquera.happybabystyle.domain.model.AuthProvider.EMAIL
-            UserRole.staff -> com.mmaquera.happybabystyle.domain.model.AuthProvider.EMAIL
-            else -> com.mmaquera.happybabystyle.domain.model.AuthProvider.EMAIL
-        }
     }
 } 

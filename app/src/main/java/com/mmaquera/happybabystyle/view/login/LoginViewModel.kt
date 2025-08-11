@@ -17,8 +17,8 @@ import kotlinx.coroutines.launch
 import com.mmaquera.happybabystyle.util.ApolloServiceProvider
 
 data class LoginState(
-    val email: String = "",
-    val password: String = "",
+    val email: String = "marco.arka@gmail.com",
+    val password: String = "Demo123$",
     val isLoading: Boolean = false,
     val isLoggedIn: Boolean = false,
     val errorMessage: String? = null,
