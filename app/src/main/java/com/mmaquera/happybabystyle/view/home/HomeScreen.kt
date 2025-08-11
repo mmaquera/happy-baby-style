@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -48,6 +49,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import com.mmaquera.happybabystyle.R
 import com.mmaquera.happybabystyle.ui.theme.Background
 import com.mmaquera.happybabystyle.ui.theme.CategoryTabBorder
@@ -71,74 +74,139 @@ import com.mmaquera.happybabystyle.ui.theme.SecondaryText
 fun HomeScreen() {
     var selectedCategory by remember { mutableStateOf("Bodysuits") }
     var searchQuery by remember { mutableStateOf("") }
-    
+
     val filteredProducts = remember(selectedCategory, searchQuery) {
         getProducts().filter { product ->
-            val matchesCategory = selectedCategory == "All" || product.type == selectedCategory.lowercase()
-            val matchesSearch = searchQuery.isEmpty() || 
-                product.name.contains(searchQuery, ignoreCase = true)
+            val matchesCategory =
+                selectedCategory == "All" || product.type == selectedCategory.lowercase()
+            val matchesSearch = searchQuery.isEmpty() ||
+                    product.name.contains(searchQuery, ignoreCase = true)
             matchesCategory && matchesSearch
         }
     }
-    
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Background)
-    ) {
-        // Header
-        HeaderSection()
-        
-        // Search Bar
-        SearchBar(
-            searchQuery = searchQuery,
-            onSearchQueryChange = { searchQuery = it }
-        )
-        
-        // Category Tabs
-        CategoryTabs(
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        containerColor = Background,
+        bottomBar = { BottomNavigation() }
+    ) { paddingValues ->
+        HomeContent(
             selectedCategory = selectedCategory,
-            onCategorySelected = { selectedCategory = it }
+            searchQuery = searchQuery,
+            onCategorySelected = { selectedCategory = it },
+            onSearchQueryChange = { searchQuery = it },
+            products = filteredProducts,
+            modifier = Modifier.padding(paddingValues)
         )
-        
-        // Product Grid
-        ProductGrid(products = filteredProducts)
-        
-        Spacer(modifier = Modifier.weight(1f))
-        
-        // Bottom Navigation
-        BottomNavigation()
     }
 }
 
 @Composable
-private fun HeaderSection() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+private fun HomeContent(
+    selectedCategory: String,
+    searchQuery: String,
+    onCategorySelected: (String) -> Unit,
+    onSearchQueryChange: (String) -> Unit,
+    products: List<Product>,
+    modifier: Modifier = Modifier
+) {
+    ConstraintLayout(
+        modifier = modifier.fillMaxSize()
     ) {
+        val (header, searchBar, categoryTabs, productGrid) = createRefs()
+
+        // Header Section
+        HeaderSection(
+            modifier = Modifier.constrainAs(header) {
+                top.linkTo(parent.top)
+                start.linkTo(parent.start)
+                end.linkTo(parent.end)
+                width = Dimension.fillToConstraints
+            }
+        )
+
+        // Search Bar
+        SearchBar(
+            searchQuery = searchQuery,
+            onSearchQueryChange = onSearchQueryChange,
+            modifier = Modifier.constrainAs(searchBar) {
+                top.linkTo(header.bottom)
+                start.linkTo(parent.start)
+                end.linkTo(parent.end)
+                width = Dimension.fillToConstraints
+            }
+        )
+
+        // Category Tabs
+        CategoryTabs(
+            selectedCategory = selectedCategory,
+            onCategorySelected = onCategorySelected,
+            modifier = Modifier.constrainAs(categoryTabs) {
+                top.linkTo(searchBar.bottom)
+                start.linkTo(parent.start)
+                end.linkTo(parent.end)
+                width = Dimension.fillToConstraints
+            }
+        )
+
+        // Product Grid
+        ProductGrid(
+            products = products,
+            modifier = Modifier.constrainAs(productGrid) {
+                top.linkTo(categoryTabs.bottom, margin = 8.dp)
+                start.linkTo(parent.start)
+                end.linkTo(parent.end)
+                bottom.linkTo(parent.bottom)
+                width = Dimension.fillToConstraints
+                height = Dimension.fillToConstraints
+            }
+        )
+    }
+}
+
+@Composable
+private fun HeaderSection(modifier: Modifier = Modifier) {
+    ConstraintLayout(
+        modifier = modifier
+            .padding(
+                top = 16.dp,
+                end = 16.dp,
+                start = 16.dp,
+                bottom = 8.dp
+            )
+    ) {
+        val (title, profileButton) = createRefs()
+
         Text(
             text = "Happy Baby Style",
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             color = PrimaryText,
-            modifier = Modifier.weight(1f),
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            modifier = Modifier.constrainAs(title) {
+                top.linkTo(parent.top)
+                bottom.linkTo(parent.bottom)
+                start.linkTo(parent.start)
+                end.linkTo(parent.end)
+                width = Dimension.fillToConstraints
+            }
         )
-        
+
         Box(
             modifier = Modifier
                 .size(48.dp)
                 .clip(CircleShape)
                 .clickable { /* Profile action */ }
-                .semantics { contentDescription = "Profile button" },
+                .semantics { contentDescription = "Profile button" }
+                .constrainAs(profileButton) {
+                    top.linkTo(parent.top)
+                    bottom.linkTo(parent.bottom)
+                    end.linkTo(parent.end)
+                },
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                painter = painterResource(id = R.drawable.ic_profile),
+                painter = painterResource(id = R.drawable.ic_home_car),
                 contentDescription = "Profile",
                 tint = IconPrimary,
                 modifier = Modifier.size(24.dp)
@@ -150,66 +218,73 @@ private fun HeaderSection() {
 @Composable
 private fun SearchBar(
     searchQuery: String,
-    onSearchQueryChange: (String) -> Unit
+    onSearchQueryChange: (String) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
+    ConstraintLayout(
+        modifier = modifier
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
-        Box(
+        val (searchContainer, searchIcon, textField) = createRefs()
+
+        // Main search container with rounded corners
+        ConstraintLayout(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .background(SearchBarBackground)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxSize(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .width(48.dp)
-                        .fillMaxHeight(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_search),
-                        contentDescription = "Search icon",
-                        tint = SearchBarText,
-                        modifier = Modifier.size(24.dp)
-                    )
+                .constrainAs(searchContainer) {
+                    top.linkTo(parent.top)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                    width = Dimension.fillToConstraints
                 }
-                
-                TextField(
-                    value = searchQuery,
-                    onValueChange = onSearchQueryChange,
-                    placeholder = {
-                        Text(
-                            text = "Search for baby clothes",
-                            fontSize = 16.sp,
-                            color = SearchBarText
-                        )
-                    },
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 8.dp, end = 16.dp),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        disabledContainerColor = Color.Transparent,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent
-                    ),
-                    textStyle = androidx.compose.ui.text.TextStyle(
+        ) {
+            // Search icon positioned on the left side
+            Icon(
+                painter = painterResource(id = R.drawable.ic_search),
+                contentDescription = "Search icon",
+                tint = SearchBarText,
+                modifier = Modifier
+                    .size(24.dp)
+                    .constrainAs(searchIcon) {
+                        top.linkTo(parent.top)
+                        bottom.linkTo(parent.bottom)
+                        start.linkTo(parent.start, margin = 16.dp)
+                    }
+            )
+
+            // Text field positioned to the right of the search icon
+            TextField(
+                value = searchQuery,
+                onValueChange = onSearchQueryChange,
+                placeholder = {
+                    Text(
+                        text = "Search for baby clothes",
                         fontSize = 16.sp,
-                        color = PrimaryText
-                    ),
-                    singleLine = true
-                )
-            }
+                        color = SearchBarText
+                    )
+                },
+                modifier = Modifier.constrainAs(textField) {
+                    top.linkTo(parent.top)
+                    bottom.linkTo(parent.bottom)
+                    start.linkTo(searchIcon.end, margin = 8.dp)
+                    end.linkTo(parent.end, margin = 16.dp)
+                    width = Dimension.fillToConstraints
+                },
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent
+                ),
+                textStyle = androidx.compose.ui.text.TextStyle(
+                    fontSize = 16.sp,
+                    color = PrimaryText
+                ),
+                singleLine = true
+            )
         }
     }
 }
@@ -217,7 +292,8 @@ private fun SearchBar(
 @Composable
 private fun CategoryTabs(
     selectedCategory: String,
-    onCategorySelected: (String) -> Unit
+    onCategorySelected: (String) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val categories = listOf("All", "Bodysuits", "Pajamas", "Outfits", "Socks", "Hats")
     val categoryIcons = listOf(
@@ -228,79 +304,114 @@ private fun CategoryTabs(
         R.drawable.ic_socks,
         R.drawable.ic_hat
     )
-    
+
     LazyRow(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+        modifier = modifier
+            .padding(
+                start = 16.dp,
+                end = 16.dp,
+                bottom = 12.dp
+            ),
         horizontalArrangement = Arrangement.spacedBy(32.dp)
     ) {
         items(categories.size) { index ->
             val category = categories[index]
             val isSelected = category == selectedCategory
-            
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .clickable { onCategorySelected(category) }
-                    .padding(vertical = 10.dp)
-                    .semantics { contentDescription = "Category $category" }
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .then(
-                            if (isSelected) {
-                                Modifier.border(
-                                    width = 3.dp,
-                                    color = CategoryTabBorder,
-                                    shape = RoundedCornerShape(4.dp)
-                                )
-                            } else {
-                                Modifier
-                            }
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (categoryIcons[index] != null) {
-                        Icon(
-                            painter = painterResource(id = categoryIcons[index]!!),
-                            contentDescription = category,
-                            tint = if (isSelected) CategoryTabSelected else CategoryTabUnselected,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    } else {
-                        // Show a simple dot for "All" category
-                        Box(
-                            modifier = Modifier
-                                .size(8.dp)
-                                .background(
-                                    color = if (isSelected) CategoryTabSelected else CategoryTabUnselected,
-                                    shape = CircleShape
-                                )
-                        )
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(4.dp))
-                
-                Text(
-                    text = category,
-                    fontSize = 14.sp,
-                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                    color = if (isSelected) CategoryTabSelected else CategoryTabUnselected
-                )
-            }
+            CategoryItem(
+                category,
+                index,
+                isSelected,
+                categoryIcons,
+                onCategorySelected
+            )
         }
     }
 }
 
 @Composable
-private fun ProductGrid(products: List<Product>) {
+private fun CategoryItem(
+    category: String,
+    index: Int,
+    isSelected: Boolean,
+    categoryIcons: List<Int?>,
+    onCategorySelected: (String) -> Unit
+) {
+    ConstraintLayout(
+        modifier = Modifier
+            .padding(top = 10.dp, bottom = 7.dp)
+            .clickable { onCategorySelected(category) }
+            .semantics { contentDescription = "Category $category" }
+    ) {
+
+        val (iconBox, text, space) = createRefs()
+
+        Box(
+            modifier = Modifier
+                .constrainAs(iconBox) {
+                    top.linkTo(parent.top)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                }
+                .size(24.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            if (categoryIcons[index] != null) {
+                Icon(
+                    painter = painterResource(id = categoryIcons[index]!!),
+                    contentDescription = category,
+                    tint = if (isSelected) CategoryTabSelected else CategoryTabUnselected,
+                    modifier = Modifier.size(20.dp)
+                )
+            } else {
+                // Show a simple dot for "All" category
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .background(
+                            color = if (isSelected) CategoryTabSelected else CategoryTabUnselected,
+                            shape = CircleShape
+                        )
+                )
+            }
+        }
+
+        Text(
+            modifier = Modifier.constrainAs(text) {
+                top.linkTo(iconBox.bottom, 4.dp)
+                start.linkTo(parent.start)
+                end.linkTo(parent.end)
+            },
+            text = category,
+            fontSize = 14.sp,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+            color = if (isSelected) CategoryTabSelected else CategoryTabUnselected
+        )
+
+        Spacer(
+            modifier = Modifier
+                .constrainAs(
+                    space
+                ) {
+                    start.linkTo(parent.start)
+                    top.linkTo(text.bottom)
+                    end.linkTo(parent.end)
+                    width = Dimension.fillToConstraints
+                }
+                .height(3.dp)
+                .background(CategoryTabBorder)
+        )
+    }
+}
+
+@Composable
+private fun ProductGrid(
+    products: List<Product>,
+    modifier: Modifier = Modifier
+) {
     if (products.isEmpty()) {
         // Show empty state
         Box(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxWidth()
                 .padding(32.dp),
             contentAlignment = Alignment.Center
@@ -331,7 +442,7 @@ private fun ProductGrid(products: List<Product>) {
     } else {
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxWidth()
                 .padding(16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -377,16 +488,16 @@ private fun ProductCard(product: Product) {
                 modifier = Modifier.size(48.dp)
             )
         }
-        
+
         Spacer(modifier = Modifier.height(12.dp))
-        
+
         Text(
             text = product.name,
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
             color = PrimaryText
         )
-        
+
         Text(
             text = product.price,
             fontSize = 14.sp,
@@ -404,7 +515,7 @@ private fun BottomNavigation() {
         NavItem.VectorNavItem("Cart", Icons.Default.ShoppingCart, false),
         NavItem.VectorNavItem("Profile", Icons.Default.Person, false)
     )
-    
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -437,6 +548,7 @@ private fun BottomNavigation() {
                                 modifier = Modifier.size(24.dp)
                             )
                         }
+
                         is NavItem.DrawableNavItem -> {
                             Icon(
                                 painter = painterResource(id = navItem.iconRes),
@@ -446,9 +558,9 @@ private fun BottomNavigation() {
                             )
                         }
                     }
-                    
+
                     Spacer(modifier = Modifier.height(4.dp))
-                    
+
                     Text(
                         text = navItem.title,
                         fontSize = 12.sp,
@@ -458,7 +570,7 @@ private fun BottomNavigation() {
                 }
             }
         }
-        
+
         Spacer(modifier = Modifier.height(20.dp))
     }
 }
@@ -495,7 +607,7 @@ sealed class NavItem(
         val icon: androidx.compose.ui.graphics.vector.ImageVector,
         override val isSelected: Boolean
     ) : NavItem(title, isSelected)
-    
+
     data class DrawableNavItem(
         override val title: String,
         val iconRes: Int,
@@ -509,25 +621,6 @@ sealed class NavItem(
 fun HomeScreenPreview() {
     HappyBabyStyleTheme {
         HomeScreen()
-    }
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
-@Composable
-fun HeaderSectionPreview() {
-    HappyBabyStyleTheme {
-        HeaderSection()
-    }
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
-@Composable
-fun SearchBarPreview() {
-    HappyBabyStyleTheme {
-        SearchBar(
-            searchQuery = "",
-            onSearchQueryChange = {}
-        )
     }
 }
 

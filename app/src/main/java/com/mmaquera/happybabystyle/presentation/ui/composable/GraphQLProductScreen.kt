@@ -153,13 +153,66 @@ private fun SearchBar(
     modifier: Modifier = Modifier,
     placeholder: @Composable () -> Unit
 ) {
-    OutlinedTextField(
-        value = query,
-        onValueChange = onQueryChange,
-        modifier = modifier,
-        placeholder = placeholder,
-        singleLine = true
-    )
+    ConstraintLayout(
+        modifier = modifier
+    ) {
+        val (searchContainer, searchIcon, textField) = createRefs()
+        
+        // Main search container with rounded corners
+        Box(
+            modifier = Modifier
+                .height(48.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color(0xFFF5F0F0))
+                .constrainAs(searchContainer) {
+                    top.linkTo(parent.top)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                    width = Dimension.fillToConstraints
+                }
+        ) {
+            // Search icon positioned on the left side
+            Icon(
+                painter = painterResource(id = R.drawable.ic_search),
+                contentDescription = "Search icon",
+                tint = Color(0xFF8A6163),
+                modifier = Modifier
+                    .size(24.dp)
+                    .constrainAs(searchIcon) {
+                        top.linkTo(parent.top)
+                        bottom.linkTo(parent.bottom)
+                        start.linkTo(parent.start, margin = 16.dp)
+                    }
+            )
+            
+            // Text field positioned to the right of the search icon
+            TextField(
+                value = query,
+                onValueChange = onQueryChange,
+                placeholder = placeholder,
+                modifier = Modifier.constrainAs(textField) {
+                    top.linkTo(parent.top)
+                    bottom.linkTo(parent.bottom)
+                    start.linkTo(searchIcon.end, margin = 8.dp)
+                    end.linkTo(parent.end, margin = 16.dp)
+                    width = Dimension.fillToConstraints
+                },
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent
+                ),
+                textStyle = androidx.compose.ui.text.TextStyle(
+                    fontSize = 16.sp,
+                    color = Color(0xFF171212)
+                ),
+                singleLine = true
+            )
+        }
+    }
 }
 
 @Composable
